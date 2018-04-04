@@ -97,6 +97,12 @@ public:
 		return ret;
 	}
 
+    // ADDED
+    vec3f elementwiseMult(vec3f b) const {
+        return { n[0] * b[0], n[1] * b[1], n[2] * b[2] };
+    }
+    // ADDED END
+
 	bool iszero() const { return ( (n[0]==0 && n[1]==0 && n[2]==0) ? true : false); };
 
 public:

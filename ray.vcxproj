@@ -93,7 +93,7 @@
       <IgnoreSpecificDefaultLibraries>libcmt;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateMapFile>true</GenerateMapFile>
       <MapFileName>.\Release/ray.map</MapFileName>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
