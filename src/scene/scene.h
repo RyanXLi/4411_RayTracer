@@ -249,9 +249,13 @@ public:
 
     TransformRoot transformRoot;
 
+	vec3f ambient_light;
+
 public:
 	Scene() 
-		: transformRoot(), objects(), lights() {}
+		: transformRoot(), objects(), lights() {
+		ambient_light = { 0, 0, 0 };
+	}
 	virtual ~Scene();
 
 	void add( Geometry* obj )
