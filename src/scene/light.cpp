@@ -15,7 +15,7 @@ vec3f DirectionalLight::shadowAttenuation( const vec3f& P ) const
 {
     // YOUR CODE HERE:
     // You should implement shadow-handling code here.
-    // return vec3f(1,1,1);
+     return vec3f(1,1,1);
 	
 	vec3f d = getDirection(P);
 	ray r(P, d);
@@ -55,7 +55,7 @@ double PointLight::distanceAttenuation( const vec3f& P ) const
 	// You'll need to modify this method to attenuate the intensity 
 	// of the light based on the distance between the source and the 
 	// point P.  For now, I assume no attenuation and just return 1.0
-	// return 1.0;
+	//return 1.0;
 	double d = P.distanceTo(position);
 	//printf("%lf %lf %lf\n", constant_attenuation_coeff, linear_attenuation_coeff, quadratic_attenuation_coeff);
 	return MAX(1, 1 / (constant_attenuation_coeff + linear_attenuation_coeff * d + quadratic_attenuation_coeff * d*d));

@@ -35,6 +35,8 @@ public:
 	Fl_Button*			m_stopButton;
 
     Fl_Light_Button*    m_jitterLightButton;
+    Fl_Light_Button*    m_adaptLightButton;
+    Fl_Light_Button*    m_rayDistLightButton;
 
 	TraceGLWindow*		m_traceGlWindow;
 
@@ -48,6 +50,8 @@ public:
     int         getThresh();
     int         getSampleNum() { return m_sampleNum; }
     bool        isJitter() { return m_jitter; }
+    bool        isAdaptive() { return m_adapt; }
+    bool        isRayDist() { return m_rayDist; }
 
 private:
 	RayTracer*	raytracer;
@@ -57,6 +61,8 @@ private:
     double      m_nThresh = 0;
     int         m_sampleNum = 1;
     bool        m_jitter = FALSE;
+    bool        m_adapt = FALSE;
+    bool        m_rayDist = FALSE;
 
 // static class members
 	static Fl_Menu_Item menuitems[];
@@ -78,6 +84,8 @@ private:
 	static void cb_render(Fl_Widget* o, void* v);
 	static void cb_stop(Fl_Widget* o, void* v);
     static void cb_jitter(Fl_Widget* o, void* v);
+    static void cb_adapt(Fl_Widget* o, void* v);
+    static void cb_rayDist(Fl_Widget* o, void* v);
 };
 
 #endif
