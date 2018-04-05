@@ -48,7 +48,7 @@ public:
 protected:
 	vec3f position;
 private:
-	float constant_attenuation_coeff, linear_attenuation_coeff, quadratic_attenuation_coeff;
+	double constant_attenuation_coeff, linear_attenuation_coeff, quadratic_attenuation_coeff;
 };
 
 #endif // __LIGHT_H__
