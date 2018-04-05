@@ -9,6 +9,7 @@
 
 #include <FL/fl_ask.h>
 
+
 #include "TraceUI.h"
 #include "../RayTracer.h"
 
@@ -96,6 +97,10 @@ void TraceUI::cb_threshSlides(Fl_Widget* o, void* v) {
     ((TraceUI*)(o->user_data()))->m_nThresh = double(((Fl_Slider *)o)->value());
 }
 
+void TraceUI::cb_sampleNumSlides(Fl_Widget* o, void* v) {
+    ((TraceUI*)(o->user_data()))->m_sampleNum = double(((Fl_Slider *)o)->value());
+}
+
 void TraceUI::cb_render(Fl_Widget* o, void* v)
 {
 	char buffer[256];
@@ -178,6 +183,10 @@ void TraceUI::cb_stop(Fl_Widget* o, void* v)
 	done=true;
 }
 
+void TraceUI::cb_jitter(Fl_Widget* o, void* v) {
+    ((TraceUI*)(o->user_data()))->m_jitter ^= true;
+}
+
 void TraceUI::show()
 {
 	m_mainWindow->show();
@@ -222,7 +231,7 @@ TraceUI::TraceUI() {
 	// init.
 	m_nDepth = 0;
 	m_nSize = 150;
-	m_mainWindow = new Fl_Window(100, 40, 320, 100, "Ray <Not Loaded>");
+	m_mainWindow = new Fl_Window(100, 40, 320, 500, "Ray <Not Loaded>");
 		m_mainWindow->user_data((void*)(this));	// record self to be used by static callback functions
 		// install menu bar
 		m_menubar = new Fl_Menu_Bar(0, 0, 320, 25);
@@ -254,17 +263,34 @@ TraceUI::TraceUI() {
 		m_sizeSlider->align(FL_ALIGN_RIGHT);
 		m_sizeSlider->callback(cb_sizeSlides);
 
-        m_sizeSlider = new Fl_Value_Slider(10, 80, 180, 20, "Threshold");
-        m_sizeSlider->user_data((void*)(this));	// record self to be used by static callback functions
-        m_sizeSlider->type(FL_HOR_NICE_SLIDER);
-        m_sizeSlider->labelfont(FL_COURIER);
-        m_sizeSlider->labelsize(12);
-        m_sizeSlider->minimum(0.0);
-        m_sizeSlider->maximum(1.0);
-        m_sizeSlider->step(0.01);
-        m_sizeSlider->value(m_nThresh);
-        m_sizeSlider->align(FL_ALIGN_RIGHT);
-        m_sizeSlider->callback(cb_threshSlides);
+        m_threshSlider = new Fl_Value_Slider(10, 80, 180, 20, "Threshold");
+        m_threshSlider->user_data((void*)(this));	// record self to be used by static callback functions
+        m_threshSlider->type(FL_HOR_NICE_SLIDER);
+        m_threshSlider->labelfont(FL_COURIER);
+        m_threshSlider->labelsize(12);
+        m_threshSlider->minimum(0.0);
+        m_threshSlider->maximum(1.0);
+        m_threshSlider->step(0.01);
+        m_threshSlider->value(m_nThresh);
+        m_threshSlider->align(FL_ALIGN_RIGHT);
+        m_threshSlider->callback(cb_threshSlides);
+
+        m_sampleNumSlider = new Fl_Value_Slider(10, 105, 180, 20, "Sample Number");
+        m_sampleNumSlider->user_data((void*)(this));	// record self to be used by static callback functions
+        m_sampleNumSlider->type(FL_HOR_NICE_SLIDER);
+        m_sampleNumSlider->labelfont(FL_COURIER);
+        m_sampleNumSlider->labelsize(12);
+        m_sampleNumSlider->minimum(1);
+        m_sampleNumSlider->maximum(5);
+        m_sampleNumSlider->step(1);
+        m_sampleNumSlider->value(m_sampleNum);
+        m_sampleNumSlider->align(FL_ALIGN_RIGHT);
+        m_sampleNumSlider->callback(cb_sampleNumSlides);
+
+        m_jitterLightButton = new Fl_Light_Button(10, 130, 70, 25, "Jitter");
+        m_jitterLightButton->user_data((void*)(this));
+        m_jitterLightButton->value(m_jitter);
+        m_jitterLightButton->callback(cb_jitter);
 
 		m_renderButton = new Fl_Button(240, 27, 70, 25, "&Render");
 		m_renderButton->user_data((void*)(this));
