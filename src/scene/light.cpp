@@ -2,7 +2,7 @@
 
 #include "light.h"
 
-#define MIN(a,b) (a<b?a:b)
+#define MAX(a,b) (a > b ? a : b)
 
 double DirectionalLight::distanceAttenuation( const vec3f& P ) const
 {
@@ -25,7 +25,7 @@ vec3f DirectionalLight::shadowAttenuation( const vec3f& P ) const
 	ray tempr(r);
 	// recursively find intersection
 	while (scene->intersect(tempr, isec)) {
-		printf("test\n");
+		// printf("test\n");
 		// a totally un-transparent object
 		if (isec.getMaterial().kt.iszero()) return { 0,0,0 };
 		// speed up the while loop when coming to small values
@@ -58,7 +58,7 @@ double PointLight::distanceAttenuation( const vec3f& P ) const
 	// return 1.0;
 	double d = P.distanceTo(position);
 	//printf("%lf %lf %lf\n", constant_attenuation_coeff, linear_attenuation_coeff, quadratic_attenuation_coeff);
-	return MIN(1, 1 / (constant_attenuation_coeff + linear_attenuation_coeff * d + quadratic_attenuation_coeff * d*d));
+	return MAX(1, 1 / (constant_attenuation_coeff + linear_attenuation_coeff * d + quadratic_attenuation_coeff * d*d));
 }
 
 vec3f PointLight::getColor( const vec3f& P ) const
@@ -87,9 +87,9 @@ vec3f PointLight::shadowAttenuation(const vec3f& P) const
 	ray tempr(r);
 	// recursively find intersection
 	while (scene->intersect(tempr, isec)) {
-		printf("intersection\n");
+		//printf("intersection\n");
 		// intersection is not before light
-		if ((distance -= isec.t) < RAY_EPSILON) { printf("%lf\n", distance); return atten; }
+		if ((distance -= isec.t) < RAY_EPSILON) { return atten; }
 		// a totally un-transparent object
 		if (isec.getMaterial().kt.iszero()) return { 0,0,0 };
 		tempP = tempr.at(isec.t);
