@@ -92,6 +92,10 @@ void TraceUI::cb_depthSlides(Fl_Widget* o, void* v)
 	((TraceUI*)(o->user_data()))->m_nDepth=int( ((Fl_Slider *)o)->value() ) ;
 }
 
+void TraceUI::cb_threshSlides(Fl_Widget* o, void* v) {
+    ((TraceUI*)(o->user_data()))->m_nThresh = double(((Fl_Slider *)o)->value());
+}
+
 void TraceUI::cb_render(Fl_Widget* o, void* v)
 {
 	char buffer[256];
@@ -195,6 +199,10 @@ int TraceUI::getDepth()
 	return m_nDepth;
 }
 
+int TraceUI::getThresh() {
+    return m_nThresh;
+}
+
 // menu definition
 Fl_Menu_Item TraceUI::menuitems[] = {
 	{ "&File",		0, 0, 0, FL_SUBMENU },
@@ -245,6 +253,18 @@ TraceUI::TraceUI() {
 		m_sizeSlider->value(m_nSize);
 		m_sizeSlider->align(FL_ALIGN_RIGHT);
 		m_sizeSlider->callback(cb_sizeSlides);
+
+        m_sizeSlider = new Fl_Value_Slider(10, 80, 180, 20, "Threshold");
+        m_sizeSlider->user_data((void*)(this));	// record self to be used by static callback functions
+        m_sizeSlider->type(FL_HOR_NICE_SLIDER);
+        m_sizeSlider->labelfont(FL_COURIER);
+        m_sizeSlider->labelsize(12);
+        m_sizeSlider->minimum(0.0);
+        m_sizeSlider->maximum(1.0);
+        m_sizeSlider->step(0.01);
+        m_sizeSlider->value(m_nThresh);
+        m_sizeSlider->align(FL_ALIGN_RIGHT);
+        m_sizeSlider->callback(cb_threshSlides);
 
 		m_renderButton = new Fl_Button(240, 27, 70, 25, "&Render");
 		m_renderButton->user_data((void*)(this));

@@ -20,7 +20,7 @@ vec3f RayTracer::trace( Scene *scene, double x, double y )
 {
     ray r( vec3f(0,0,0), vec3f(0,0,0) );
     scene->getCamera()->rayThrough( x,y,r );
-	return traceRay( scene, r, vec3f(1.0,1.0,1.0), traceUI->getDepth() ).clamp();
+	return traceRay( scene, r, vec3f(traceUI->getThresh(), traceUI->getThresh(), traceUI->getThresh()), traceUI->getDepth() ).clamp();
 }
 
 // Do recursive ray tracing!  You'll want to insert a lot of code here
@@ -28,7 +28,7 @@ vec3f RayTracer::trace( Scene *scene, double x, double y )
 vec3f RayTracer::traceRay( Scene *scene, const ray& r, 
 	const vec3f& thresh, int depth )
 {
-    if (depth < 0) { return{ 0, 0, 0 }; }
+    if (depth < 0 || thresh[0] > 1 || thresh[1] > 1 || thresh[2] > 1) { return{ 0, 0, 0 }; }
 
 	isect i;
     vec3f intensity;
@@ -66,14 +66,14 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
         vec3f reflectDir = reflectDirection(r, i, flipNormal);
         ray reflectRay(r.at(i.t) + i.N.normalize() * NORMAL_EPSILON, reflectDir.normalize());
         intensity += i.getMaterial().kr.elementwiseMult(
-            traceRay(scene, reflectRay, thresh, depth - 1));
+            traceRay(scene, reflectRay, thresh / i.getMaterial().kr, depth - 1));
 
         if (!isTIR(r, i, n_i, n_t)) {
             //printf("refract");
             vec3f retractDir = retractDirection(r, i, n_i, n_t, flipNormal);
             ray retractRay(r.at(i.t), retractDir.normalize());
             intensity += i.getMaterial().kt.elementwiseMult(
-                traceRay(scene, retractRay, thresh, depth - 1));
+                traceRay(scene, retractRay, thresh / i.getMaterial().kt, depth - 1));
         }
         intensity = intensity.clamp();
 		return intensity;
