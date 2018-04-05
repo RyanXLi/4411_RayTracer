@@ -20,7 +20,7 @@ vec3f RayTracer::trace( Scene *scene, double x, double y )
 {
     ray r( vec3f(0,0,0), vec3f(0,0,0) );
     scene->getCamera()->rayThrough( x,y,r );
-	return traceRay( scene, r, vec3f(1.0,1.0,1.0), traceUI->getDepth() ).clamp();
+	return traceRay( scene, r, vec3f(traceUI->getThresh(), traceUI->getThresh(), traceUI->getThresh()), traceUI->getDepth() ).clamp();
 }
 
 // Do recursive ray tracing!  You'll want to insert a lot of code here
@@ -28,7 +28,7 @@ vec3f RayTracer::trace( Scene *scene, double x, double y )
 vec3f RayTracer::traceRay( Scene *scene, const ray& r, 
 	const vec3f& thresh, int depth )
 {
-    if (depth < 0) { return{ 0, 0, 0 }; }
+    if (depth < 0 || thresh[0] > 1 || thresh[1] > 1 || thresh[2] > 1) { return{ 0, 0, 0 }; }
 
 	isect i;
     vec3f intensity;
@@ -48,31 +48,34 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 		const Material& m = i.getMaterial();
         intensity = m.shade(scene, r, i);
 
-        //relection
-        vec3f reflectDir = reflectDirection(r, i);
-        ray reflectRay(r.at(i.t) + i.N.normalize() * NORMAL_EPSILON, reflectDir.normalize());
-        intensity += i.getMaterial().kr.elementwiseMult(
-            traceRay(scene, reflectRay, thresh, depth - 1));
 
-        // refraction
+
         double n_i, n_t;
-        if (r.getDirection().dot(i.N) >= 0) { // if entering object
+        bool flipNormal;
+        if (r.getDirection().dot(i.N) < 0) { // if entering object
             n_i = 1; // air
             n_t = i.getMaterial().index;
+            flipNormal = TRUE;
         }
         else {
             n_i = i.getMaterial().index;
             n_t = 1; // air
+            flipNormal = FALSE;
         }
+
+        vec3f reflectDir = reflectDirection(r, i, flipNormal);
+        ray reflectRay(r.at(i.t) + i.N.normalize() * NORMAL_EPSILON, reflectDir.normalize());
+        intensity += i.getMaterial().kr.elementwiseMult(
+            traceRay(scene, reflectRay, thresh / i.getMaterial().kr, depth - 1));
 
         if (!isTIR(r, i, n_i, n_t)) {
             //printf("refract");
-            vec3f retractDir = retractDirection(r, i, n_i, n_t);
-            ray retractRay(r.at(i.t) - i.N.normalize() * NORMAL_EPSILON, retractDir.normalize());
+            vec3f retractDir = retractDirection(r, i, n_i, n_t, flipNormal);
+            ray retractRay(r.at(i.t), retractDir.normalize());
             intensity += i.getMaterial().kt.elementwiseMult(
-                traceRay(scene, retractRay, thresh, depth - 1));
+                traceRay(scene, retractRay, thresh / i.getMaterial().kt, depth - 1));
         }
-
+        intensity = intensity.clamp();
 		return intensity;
 	
 	} else {
@@ -196,18 +199,21 @@ void RayTracer::tracePixel( int i, int j )
 }
 
 
-vec3f RayTracer::reflectDirection(ray r, isect i) {
-    vec3f negD = r.getDirection(); 
+vec3f RayTracer::reflectDirection(ray r, isect i, bool flipNormal) {
+    vec3f negD = r.getDirection().normalize(); 
     negD *= -1; // the negitive ray direction
 
     vec3f normal = i.N.normalize();
+    if (flipNormal) { normal *= -1; }
+
     return 2 * negD.dot(normal) * normal - negD;
 }
 
-vec3f RayTracer::retractDirection(ray r, isect i, double n_i, double n_t) {
+vec3f RayTracer::retractDirection(ray r, isect i, double n_i, double n_t, bool flipNormal) {
     vec3f ret(0, 0, 0);
     vec3f n = i.N;
-    vec3f v = r.getDirection();
+    if (flipNormal) { n *= -1; }
+    vec3f v = r.getDirection().normalize();
 
     for (int i = 0; i < 3; i++) {
         ret[i] = n_i / n_t * (
@@ -219,7 +225,7 @@ vec3f RayTracer::retractDirection(ray r, isect i, double n_i, double n_t) {
 
 bool RayTracer::isTIR(ray r, isect i, double n_i, double n_t) {
     return (
-        pow(i.N.dot(r.getDirection()), 2) <
+        pow(i.N.normalize().dot(r.getDirection().normalize()), 2) <=
         1 - pow(n_t/n_i , 2)
         );
 }

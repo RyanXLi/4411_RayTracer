@@ -22,9 +22,9 @@ public:
 	void traceLines( int start = 0, int stop = 10000000 );
 	void tracePixel( int i, int j );
 
-    vec3f reflectDirection(ray r, isect i);
+    vec3f reflectDirection(ray r, isect i, bool flipNormal);
 
-    vec3f retractDirection(ray r, isect i, double n_i, double n_t);
+    vec3f retractDirection(ray r, isect i, double n_i, double n_t, bool flipNormal);
 
     bool isTIR(ray r, isect i, double n_i, double n_t);
 
