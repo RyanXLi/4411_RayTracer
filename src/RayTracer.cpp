@@ -181,21 +181,79 @@ void RayTracer::traceLines( int start, int stop )
 
 void RayTracer::tracePixel( int i, int j )
 {
-	vec3f col;
+    vec3f col = { 0, 0, 0 };
 
 	if( !scene )
 		return;
 
-	double x = double(i)/double(buffer_width);
-	double y = double(j)/double(buffer_height);
+    int sampleNum = traceUI->getSampleNum();
 
-	col = trace( scene,x,y );
+    if (sampleNum == 1) {
+        //original code
+        double x, y;
+        if (!traceUI->isJitter()) {
+            x = double(i) / double(buffer_width);
+            y = double(j) / double(buffer_height);
+        }
+        else {
+            double x0 = (double(i) - 0.5) / double(buffer_width);
+            double y0 = (double(j) - 0.5) / double(buffer_height);
+            double dx = 1 / (double(buffer_width));
+            double dy = 1 / (double(buffer_height));
+            x = x0 + (rand() / (RAND_MAX + 1.)) * dx;
+            y = y0 + (rand() / (RAND_MAX + 1.)) * dy;
+        }
 
-	unsigned char *pixel = buffer + ( i + j * buffer_width ) * 3;
+        col = trace(scene, x, y);
 
-	pixel[0] = (int)( 255.0 * col[0]);
-	pixel[1] = (int)( 255.0 * col[1]);
-	pixel[2] = (int)( 255.0 * col[2]);
+        unsigned char *pixel = buffer + (i + j * buffer_width) * 3;
+
+        pixel[0] = (int)(255.0 * col[0]);
+        pixel[1] = (int)(255.0 * col[1]);
+        pixel[2] = (int)(255.0 * col[2]);
+    }
+    else {
+
+        double x0 = (double(i) - 0.5) / double(buffer_width);
+        double y0 = (double(j) - 0.5) / double(buffer_height);
+
+        if (!traceUI->isJitter()) {
+
+            double dx = 1 / (double(buffer_width) * (sampleNum - 1));
+            double dy = 1 / (double(buffer_height) * (sampleNum - 1));
+
+            for (int p = 0; p < sampleNum; p++) {
+                for (int q = 0; q < sampleNum; q++) {
+                    double x = x0 + p * dx;
+                    double y = y0 + q * dy;
+
+                    col += trace(scene, x, y);
+                }
+            }
+        }
+        else {
+
+            double dx = 1 / (double(buffer_width) * (sampleNum));
+            double dy = 1 / (double(buffer_height) * (sampleNum));
+            
+            for (int p = 0; p < sampleNum; p++) {
+                for (int q = 0; q < sampleNum; q++) {
+                    double x = x0 + (p + (rand() / (RAND_MAX + 1.))) * dx;
+                    double y = y0 + (q + (rand() / (RAND_MAX + 1.))) * dy;
+
+                    col += trace(scene, x, y);
+                }
+            }
+        }
+
+        unsigned char *pixel = buffer + (i + j * buffer_width) * 3;
+
+        pixel[0] = (int)(255.0 * col[0] / sampleNum / sampleNum);
+        pixel[1] = (int)(255.0 * col[1] / sampleNum / sampleNum);
+        pixel[2] = (int)(255.0 * col[2] / sampleNum / sampleNum);
+    }
+
+	
 }
 
 
@@ -204,7 +262,7 @@ vec3f RayTracer::reflectDirection(ray r, isect i, bool flipNormal) {
     negD *= -1; // the negitive ray direction
 
     vec3f normal = i.N.normalize();
-    if (flipNormal) { normal *= -1; }
+    if (!flipNormal) { normal *= -1; }
 
     return 2 * negD.dot(normal) * normal - negD;
 }

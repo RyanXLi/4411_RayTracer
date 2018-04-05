@@ -11,7 +11,7 @@
 #include <FL/Fl_Window.H>
 #include <FL/Fl_Menu_Bar.H>
 #include <FL/Fl_Value_Slider.H>
-#include <FL/Fl_Check_Button.H>
+#include <FL/Fl_Light_Button.H>
 #include <FL/Fl_Button.H>
 
 #include <FL/fl_file_chooser.H>		// FLTK file chooser
@@ -29,9 +29,12 @@ public:
 	Fl_Slider*			m_sizeSlider;
 	Fl_Slider*			m_depthSlider;
     Fl_Slider*			m_threshSlider;
+    Fl_Slider*			m_sampleNumSlider;
 
 	Fl_Button*			m_renderButton;
 	Fl_Button*			m_stopButton;
+
+    Fl_Light_Button*    m_jitterLightButton;
 
 	TraceGLWindow*		m_traceGlWindow;
 
@@ -43,13 +46,17 @@ public:
 	int			getSize();
 	int			getDepth();
     int         getThresh();
+    int         getSampleNum() { return m_sampleNum; }
+    bool        isJitter() { return m_jitter; }
 
 private:
 	RayTracer*	raytracer;
 
 	int			m_nSize;
 	int			m_nDepth;
-    double      m_nThresh;
+    double      m_nThresh = 0;
+    int         m_sampleNum = 1;
+    bool        m_jitter = FALSE;
 
 // static class members
 	static Fl_Menu_Item menuitems[];
@@ -66,9 +73,11 @@ private:
 	static void cb_sizeSlides(Fl_Widget* o, void* v);
 	static void cb_depthSlides(Fl_Widget* o, void* v);
     static void cb_threshSlides(Fl_Widget* o, void* v);
+    static void cb_sampleNumSlides(Fl_Widget* o, void* v);
 
 	static void cb_render(Fl_Widget* o, void* v);
 	static void cb_stop(Fl_Widget* o, void* v);
+    static void cb_jitter(Fl_Widget* o, void* v);
 };
 
 #endif
