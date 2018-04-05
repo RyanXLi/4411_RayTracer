@@ -42,28 +42,29 @@ bool Box::intersectLocal( const ray& r, isect& i ) const
     tmin = max(tmin, tzmin);
     tmax = min(tmax, tzmax);
 
-    i.obj = this;
-    i.t = tmin < 0 ? tmax : tmin;
+    double err = RAY_EPSILON;
 
-    double err = 0.0001;
+    i.obj = this;
+    if (tmin < err) return false;
+    i.t = tmin;
 
     vec3f isectPoint = r.at(i.t);
-    if (fabs(isectPoint[0] - 0.5 <= err)) {
+    if (fabs(isectPoint[0] - 0.5) <= err) {
         i.N = { 1,0,0 };
     } 
-    else if (fabs(isectPoint[0] + 0.5 <= err)) {
+    else if (fabs(isectPoint[0] + 0.5) <= err) {
         i.N = { -1,0,0 };
     }
-    else if (fabs(isectPoint[1] - 0.5 <= err)) {
+    else if (fabs(isectPoint[1] - 0.5) <= err) {
         i.N = { 0,1,0 };
     }
-    else if (fabs(isectPoint[1] + 0.5 <= err)) {
+    else if (fabs(isectPoint[1] + 0.5) <= err) {
         i.N = { 0,-1,0 };
     }
-    else if (fabs(isectPoint[2] - 0.5 <= err)) {
+    else if (fabs(isectPoint[2] - 0.5) <= err) {
         i.N = { 0,0,1 };
     }
-    else if (fabs(isectPoint[2] + 0.5 <= err)) {
+    else if (fabs(isectPoint[2] + 0.5) <= err) {
         i.N = { 0,0,-1 };
     }
     return true;

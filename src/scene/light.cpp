@@ -55,7 +55,7 @@ double PointLight::distanceAttenuation( const vec3f& P ) const
 	// point P.  For now, I assume no attenuation and just return 1.0
 	// return 1.0;
 	double d = P.distanceTo(position);
-	return MIN(0, 1 / (constant_attenuation_coeff + linear_attenuation_coeff * d + quadratic_attenuation_coeff * d*d));
+	return MIN(1, 1 / (constant_attenuation_coeff + linear_attenuation_coeff * d + quadratic_attenuation_coeff * d*d));
 }
 
 vec3f PointLight::getColor( const vec3f& P ) const
