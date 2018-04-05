@@ -3,6 +3,7 @@
 #include "light.h"
 
 #define MAX(a,b) (a > b ? a : b)
+#define MIN(a,b) (a < b ? a : b)
 
 double DirectionalLight::distanceAttenuation( const vec3f& P ) const
 {
@@ -58,7 +59,7 @@ double PointLight::distanceAttenuation( const vec3f& P ) const
 	// return 1.0;
 	double d = P.distanceTo(position);
 	//printf("%lf %lf %lf\n", constant_attenuation_coeff, linear_attenuation_coeff, quadratic_attenuation_coeff);
-	return MAX(1, 1 / (constant_attenuation_coeff + linear_attenuation_coeff * d + quadratic_attenuation_coeff * d*d));
+	return MIN(1, 1 / (constant_attenuation_coeff + linear_attenuation_coeff * d + quadratic_attenuation_coeff * d*d));
 }
 
 vec3f PointLight::getColor( const vec3f& P ) const
