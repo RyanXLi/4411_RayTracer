@@ -3,63 +3,69 @@
 
 #include "Box.h"
 
-bool intersectionParallel(double A, double B, double C, double D, const ray&r)
-{
-	vec3f pn = vec3f(A, B, C);
-	vec3f d = r.getDirection();
-	return (pn.dot(d) < RAY_EPSILON && pn.dot(d) > -RAY_EPSILON);
-}
-
-double intersectQuadrilaterals(double A, double B, double C, double D, const ray&r)
-{
-	vec3f pn = vec3f(A, B, C);
-	vec3f d = r.getDirection();
-	vec3f p = r.getPosition();
-	double t = -(pn.dot(p) + D) / (pn.dot(d));
-	return t;
-}
-
 bool Box::intersectLocal( const ray& r, isect& i ) const
 {
 	// YOUR CODE HERE:
     // Add box intersection code here.
 	// it currently ignores all boxes and just returns false.
 	
-	BoundingBox localbounds;
-	localbounds.max = vec3f(0.5, 0.5, 0.5);
-	localbounds.min = vec3f(-0.5, -0.5, -0.5);
+    vec3f o = r.at(0);
+    vec3f d = r.getDirection();
+    double txmin, txmax, tymin, tymax, tzmin, tzmax, tmin, tmax;
+    
+    txmin = (-0.5-o[0]) / d[0];
+    txmax = (0.5 - o[0]) / d[0];
+    if (txmin > txmax) { swap(txmin, txmax); }
 
-	double tMin = -1.0e308;
-	double tMax = 1.0e308;
+    tmin = txmin;
+    tmax = txmax;
 
-	if (localbounds.intersect(r, tMin, tMax))
-	{
+    tymin = (-0.5 - o[1]) / d[1];
+    tymax = (0.5 - o[1]) / d[1];
+    if (tymin > tymax) { swap(tymin, tymax); }
 
-		if (tMin < RAY_EPSILON)
-			return false;
-		i.obj = this;
-		i.t = tMin;
-		if (r.at(tMin)[0] - 0.5<RAY_EPSILON && r.at(tMin)[0] - 0.5>-RAY_EPSILON) {
-			i.N = vec3f(1.0, 0.0, 0.0);
-		}
-		else if (r.at(tMin)[0] + 0.5<RAY_EPSILON && r.at(tMin)[0] + 0.5>-RAY_EPSILON) {
-			i.N = vec3f(-1.0, 0.0, 0.0);
-		}
-		else if (r.at(tMin)[1] - 0.5<RAY_EPSILON && r.at(tMin)[1] - 0.5>-RAY_EPSILON) {
-			i.N = vec3f(0.0, 1.0, 0.0);
-		}
-		else if (r.at(tMin)[1] + 0.5<RAY_EPSILON && r.at(tMin)[1] + 0.5>-RAY_EPSILON) {
-			i.N = vec3f(0.0, -1.0, 0.0);
-		}
-		else if (r.at(tMin)[2] - 0.5<RAY_EPSILON && r.at(tMin)[2] - 0.5>-RAY_EPSILON) {
-			i.N = vec3f(0.0, 0.0, 1.0);
-		}
-		else if (r.at(tMin)[2] + 0.5<RAY_EPSILON && r.at(tMin)[2] + 0.5>-RAY_EPSILON) {
-			i.N = vec3f(0.0, 0.0, -1.0);
-		}
-		else;
+    if ((tmin > tymax) || (tymin > tmax)) {
+        return false;
+    }
 
-		return true;
-	}
-	return false;
+    tmin = max(tmin, tymin);
+    tmax = min(tmax, tymax);
+
+    tzmin = (-0.5 - o[2]) / d[2];
+    tzmax = (0.5 - o[2]) / d[2];
+    if (tzmin > tzmax) { swap(tzmin, tzmax); }
+
+    if ((tmin > tzmax) || (tzmin > tmax)) {
+        return false;
+    }
+
+    tmin = max(tmin, tzmin);
+    tmax = min(tmax, tzmax);
+
+    double err = RAY_EPSILON;
+
+    i.obj = this;
+    if (tmin < err) return false;
+    i.t = tmin;
+
+    vec3f isectPoint = r.at(i.t);
+    if (fabs(isectPoint[0] - 0.5) <= err) {
+        i.N = { 1,0,0 };
+    } 
+    else if (fabs(isectPoint[0] + 0.5) <= err) {
+        i.N = { -1,0,0 };
+    }
+    else if (fabs(isectPoint[1] - 0.5) <= err) {
+        i.N = { 0,1,0 };
+    }
+    else if (fabs(isectPoint[1] + 0.5) <= err) {
+        i.N = { 0,-1,0 };
+    }
+    else if (fabs(isectPoint[2] - 0.5) <= err) {
+        i.N = { 0,0,1 };
+    }
+    else if (fabs(isectPoint[2] + 0.5) <= err) {
+        i.N = { 0,0,-1 };
+    }
+    return true;
 }
