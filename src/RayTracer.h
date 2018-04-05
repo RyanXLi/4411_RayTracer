@@ -22,6 +22,8 @@ public:
 	void traceLines( int start = 0, int stop = 10000000 );
 	void tracePixel( int i, int j );
 
+    vec3f traceCorners(double x, double y, double sideX, double sideY, int depth, double adaptThres);
+
     vec3f reflectDirection(ray r, isect i, bool flipNormal);
 
     vec3f retractDirection(ray r, isect i, double n_i, double n_t, bool flipNormal);
@@ -31,6 +33,8 @@ public:
 	bool loadScene( char* fn );
 
 	bool sceneLoaded();
+
+    double* rayDistTable = nullptr;
 
 private:
 	unsigned char *buffer;

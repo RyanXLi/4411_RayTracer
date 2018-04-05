@@ -67,7 +67,7 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
         ray reflectRay(r.at(i.t) + i.N.normalize() * NORMAL_EPSILON, reflectDir.normalize());
         intensity += i.getMaterial().kr.elementwiseMult(
             traceRay(scene, reflectRay, thresh / i.getMaterial().kr, depth - 1));
-
+        
         if (!isTIR(r, i, n_i, n_t)) {
             //printf("refract");
             vec3f retractDir = retractDirection(r, i, n_i, n_t, flipNormal);
@@ -82,6 +82,7 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 		// No intersection.  This ray travels to infinity, so we color
 		// it according to the background color, which in this (simple) case
 		// is just black.
+
 
 		return vec3f( 0.0, 0.0, 0.0 );
 	}
@@ -153,6 +154,17 @@ bool RayTracer::loadScene( char* fn )
 
 void RayTracer::traceSetup( int w, int h )
 {
+    // ADDED
+    if (traceUI->isRayDist()) {
+        if (rayDistTable != nullptr) {
+            delete[] rayDistTable;
+        }
+        rayDistTable = new double[w*h];
+        for (int i = 0; i < w*h; i++) {
+            rayDistTable[i] = 0.0;
+        }
+    }
+    // ADDED END
 	if( buffer_width != w || buffer_height != h )
 	{
 		buffer_width = w;
@@ -189,7 +201,6 @@ void RayTracer::tracePixel( int i, int j )
     int sampleNum = traceUI->getSampleNum();
 
     if (sampleNum == 1) {
-        //original code
         double x, y;
         if (!traceUI->isJitter()) {
             x = double(i) / double(buffer_width);
@@ -214,46 +225,152 @@ void RayTracer::tracePixel( int i, int j )
     }
     else {
 
-        double x0 = (double(i) - 0.5) / double(buffer_width);
-        double y0 = (double(j) - 0.5) / double(buffer_height);
+        if (!traceUI->isAdaptive()) {
 
-        if (!traceUI->isJitter()) {
+            // normal antialiasing or jitter
 
-            double dx = 1 / (double(buffer_width) * (sampleNum - 1));
-            double dy = 1 / (double(buffer_height) * (sampleNum - 1));
+            double x0 = (double(i) - 0.5) / double(buffer_width);
+            double y0 = (double(j) - 0.5) / double(buffer_height);
 
-            for (int p = 0; p < sampleNum; p++) {
-                for (int q = 0; q < sampleNum; q++) {
-                    double x = x0 + p * dx;
-                    double y = y0 + q * dy;
+            if (!traceUI->isJitter()) {
+                // jitter
 
-                    col += trace(scene, x, y);
+                double dx = 1 / (double(buffer_width) * (sampleNum - 1));
+                double dy = 1 / (double(buffer_height) * (sampleNum - 1));
+
+                for (int p = 0; p < sampleNum; p++) {
+                    for (int q = 0; q < sampleNum; q++) {
+                        double x = x0 + p * dx;
+                        double y = y0 + q * dy;
+
+                        col += trace(scene, x, y);
+                    }
                 }
             }
+            else {
+                // normal
+
+                double dx = 1 / (double(buffer_width) * (sampleNum));
+                double dy = 1 / (double(buffer_height) * (sampleNum));
+
+                for (int p = 0; p < sampleNum; p++) {
+                    for (int q = 0; q < sampleNum; q++) {
+                        double x = x0 + (p + (rand() / (RAND_MAX + 1.))) * dx;
+                        double y = y0 + (q + (rand() / (RAND_MAX + 1.))) * dy;
+
+                        col += trace(scene, x, y);
+                    }
+                }
+            }
+
+            unsigned char *pixel = buffer + (i + j * buffer_width) * 3;
+
+            pixel[0] = (int)(255.0 * col[0] / sampleNum / sampleNum);
+            pixel[1] = (int)(255.0 * col[1] / sampleNum / sampleNum);
+            pixel[2] = (int)(255.0 * col[2] / sampleNum / sampleNum);
         }
         else {
+            // adaptive
 
-            double dx = 1 / (double(buffer_width) * (sampleNum));
-            double dy = 1 / (double(buffer_height) * (sampleNum));
-            
-            for (int p = 0; p < sampleNum; p++) {
-                for (int q = 0; q < sampleNum; q++) {
-                    double x = x0 + (p + (rand() / (RAND_MAX + 1.))) * dx;
-                    double y = y0 + (q + (rand() / (RAND_MAX + 1.))) * dy;
+            double adaptThres = 0.1;
+            int depth = 1;
 
-                    col += trace(scene, x, y);
-                }
+            if (sampleNum <= 3) { 
+                sampleNum = 3; 
+                depth = 1;
             }
+            else { 
+                sampleNum = 5;
+                depth = 2;
+            }
+
+            double x, y;
+            x = double(i) / double(buffer_width);
+            y = double(j) / double(buffer_height);
+
+            if (traceUI->isRayDist()) {
+                traceCorners(x, y, 1 / double(buffer_width), 1 / double(buffer_height), depth, adaptThres);
+                double val = rayDistTable[(int)(x*buffer_width) + (int)(y*buffer_height)*buffer_width];
+                if (val > 0.001) {
+                    //printf("idx: %f\n", (int)(x*buffer_width) + (int)(y*buffer_height)*buffer_width);
+                    printf("val: %f\n", val);
+                }
+                col = { val, val, val };
+            }
+            else {
+                col = traceCorners(x, y, 1 / double(buffer_width), 1 / double(buffer_height), depth, adaptThres);
+            }
+
+            unsigned char *pixel = buffer + (i + j * buffer_width) * 3;
+
+            pixel[0] = (int)(255.0 * col[0]);
+            pixel[1] = (int)(255.0 * col[1]);
+            pixel[2] = (int)(255.0 * col[2]);
+
         }
-
-        unsigned char *pixel = buffer + (i + j * buffer_width) * 3;
-
-        pixel[0] = (int)(255.0 * col[0] / sampleNum / sampleNum);
-        pixel[1] = (int)(255.0 * col[1] / sampleNum / sampleNum);
-        pixel[2] = (int)(255.0 * col[2] / sampleNum / sampleNum);
     }
 
 	
+}
+
+class Point {
+public:
+    double x;
+    double y;
+};
+
+vec3f RayTracer::traceCorners(double x, double y, double sideX, double sideY, int depth, double adaptThres) {
+    // returns final colors between 0 and 1
+    if (depth <= 0) {
+        if (traceUI->isRayDist()) {
+            rayDistTable[(int)(x*buffer_width) + (int)(y*buffer_height)*buffer_width] = 1;
+        }
+
+        return trace(scene, x, y);
+
+    }
+
+    Point corners[4];
+    corners[0] = { x - 0.5*sideX, y - 0.5*sideY };
+    corners[1] = { x + 0.5*sideX, y - 0.5*sideY };
+    corners[2] = { x - 0.5*sideX, y + 0.5*sideY };
+    corners[3] = { x + 0.5*sideX, y + 0.5*sideY };
+
+    vec3f centerCol = trace(scene, x, y);
+    vec3f col = { 0,0,0 };
+
+    for (int i = 0; i <= 3; i++) {
+        vec3f cornerCol = trace(scene, corners[i].x, corners[i].y);
+
+        //if ((256*centerCol).distanceTo(256*cornerCol) > 0.000001) {
+        //    printf("%f\n", (256 * centerCol).distanceTo(256 * cornerCol));
+        //    printf("%f\n", centerCol[0]);
+        //    printf("%f\n", centerCol[1]);
+        //    printf("%f\n", centerCol[2]);
+        //    printf("%f\n", cornerCol[0]);
+        //    printf("%f\n", cornerCol[1]);
+        //    printf("%f\n", cornerCol[2]);
+        //    printf("\n");
+        //}
+
+        if ((centerCol[0] - cornerCol[0] > adaptThres)
+            || (centerCol[1] - cornerCol[1] > adaptThres)
+            || (centerCol[2] - cornerCol[2] > adaptThres)
+            ) {
+            printf("%d", depth);
+            if (traceUI->isRayDist() && depth > 1) { 
+                rayDistTable[(int)(x*buffer_width) + (int)(y*buffer_height)*buffer_width] = 1 / (depth-1); 
+            }
+            col += 0.25 * traceCorners((x + corners[i].x) / 2, (y + corners[i].y) / 2, sideX / 2, sideY / 2, depth - 1, adaptThres);
+        }
+        else {
+            
+            col += 0.25 * cornerCol;
+
+        }      
+    }
+
+    return col;
 }
 
 

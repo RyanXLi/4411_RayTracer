@@ -187,6 +187,14 @@ void TraceUI::cb_jitter(Fl_Widget* o, void* v) {
     ((TraceUI*)(o->user_data()))->m_jitter ^= true;
 }
 
+void TraceUI::cb_adapt(Fl_Widget * o, void * v) {
+    ((TraceUI*)(o->user_data()))->m_adapt ^= true;
+}
+
+void TraceUI::cb_rayDist(Fl_Widget * o, void * v) {
+    ((TraceUI*)(o->user_data()))->m_rayDist ^= true;
+}
+
 void TraceUI::show()
 {
 	m_mainWindow->show();
@@ -294,6 +302,16 @@ TraceUI::TraceUI() {
         m_jitterLightButton->user_data((void*)(this));
         m_jitterLightButton->value(m_jitter);
         m_jitterLightButton->callback(cb_jitter);
+
+        m_adaptLightButton = new Fl_Light_Button(100, 130, 70, 25, "Adapt");
+        m_adaptLightButton->user_data((void*)(this));
+        m_adaptLightButton->value(m_adapt);
+        m_adaptLightButton->callback(cb_adapt);
+
+        m_rayDistLightButton = new Fl_Light_Button(190, 130, 70, 25, "RayDist");
+        m_rayDistLightButton->user_data((void*)(this));
+        m_rayDistLightButton->value(m_rayDist);
+        m_rayDistLightButton->callback(cb_rayDist);
 
 		m_renderButton = new Fl_Button(240, 27, 70, 25, "&Render");
 		m_renderButton->user_data((void*)(this));
