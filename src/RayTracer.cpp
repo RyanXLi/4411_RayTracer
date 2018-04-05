@@ -48,31 +48,34 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 		const Material& m = i.getMaterial();
         intensity = m.shade(scene, r, i);
 
-        //relection
-        vec3f reflectDir = reflectDirection(r, i);
-        ray reflectRay(r.at(i.t) + i.N.normalize() * NORMAL_EPSILON, reflectDir.normalize());
-        intensity += i.getMaterial().kr.elementwiseMult(
-            traceRay(scene, reflectRay, thresh, depth - 1));
 
-        // refraction
+
         double n_i, n_t;
-        if (r.getDirection().dot(i.N) >= 0) { // if entering object
+        bool flipNormal;
+        if (r.getDirection().dot(i.N) < 0) { // if entering object
             n_i = 1; // air
             n_t = i.getMaterial().index;
+            flipNormal = TRUE;
         }
         else {
             n_i = i.getMaterial().index;
             n_t = 1; // air
+            flipNormal = FALSE;
         }
+
+        vec3f reflectDir = reflectDirection(r, i, flipNormal);
+        ray reflectRay(r.at(i.t) + i.N.normalize() * NORMAL_EPSILON, reflectDir.normalize());
+        intensity += i.getMaterial().kr.elementwiseMult(
+            traceRay(scene, reflectRay, thresh, depth - 1));
 
         if (!isTIR(r, i, n_i, n_t)) {
             //printf("refract");
-            vec3f retractDir = retractDirection(r, i, n_i, n_t);
-            ray retractRay(r.at(i.t) - i.N.normalize() * NORMAL_EPSILON, retractDir.normalize());
+            vec3f retractDir = retractDirection(r, i, n_i, n_t, flipNormal);
+            ray retractRay(r.at(i.t), retractDir.normalize());
             intensity += i.getMaterial().kt.elementwiseMult(
                 traceRay(scene, retractRay, thresh, depth - 1));
         }
-
+        intensity = intensity.clamp();
 		return intensity;
 	
 	} else {
@@ -196,18 +199,21 @@ void RayTracer::tracePixel( int i, int j )
 }
 
 
-vec3f RayTracer::reflectDirection(ray r, isect i) {
-    vec3f negD = r.getDirection(); 
+vec3f RayTracer::reflectDirection(ray r, isect i, bool flipNormal) {
+    vec3f negD = r.getDirection().normalize(); 
     negD *= -1; // the negitive ray direction
 
     vec3f normal = i.N.normalize();
+    if (flipNormal) { normal *= -1; }
+
     return 2 * negD.dot(normal) * normal - negD;
 }
 
-vec3f RayTracer::retractDirection(ray r, isect i, double n_i, double n_t) {
+vec3f RayTracer::retractDirection(ray r, isect i, double n_i, double n_t, bool flipNormal) {
     vec3f ret(0, 0, 0);
     vec3f n = i.N;
-    vec3f v = r.getDirection();
+    if (flipNormal) { n *= -1; }
+    vec3f v = r.getDirection().normalize();
 
     for (int i = 0; i < 3; i++) {
         ret[i] = n_i / n_t * (
@@ -219,7 +225,7 @@ vec3f RayTracer::retractDirection(ray r, isect i, double n_i, double n_t) {
 
 bool RayTracer::isTIR(ray r, isect i, double n_i, double n_t) {
     return (
-        pow(i.N.dot(r.getDirection()), 2) <
+        pow(i.N.normalize().dot(r.getDirection().normalize()), 2) <=
         1 - pow(n_t/n_i , 2)
         );
 }
