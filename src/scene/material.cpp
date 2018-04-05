@@ -2,11 +2,6 @@
 #include "material.h"
 #include "light.h"
 
-#define MAX(a,b) (a > b ? a : b)
-
-typedef list<Light*>::iterator 			liter;
-typedef list<Light*>::const_iterator 	cliter;
-
 // Apply the phong model to this point on the surface of the object, returning
 // the color of that point.
 vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
@@ -25,15 +20,5 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 
 	// return kd;
 
-	vec3f Id = ke + ka.elementwiseMult(scene->ambient_light);
-	for (cliter it = scene->beginLights(); it != scene->endLights(); ++it) {
-		vec3f atten = (*it)->distanceAttenuation(r.at(i.t))*(*it)->shadowAttenuation(r.at(i.t));
-		vec3f diffuse = kd * ((i.N).dot((*it)->getDirection(r.at(i.t))));
-		vec3f V = -r.getDirection();
-		vec3f R = (2 * ((*it)->getDirection(r.at(i.t)).dot(i.N) * i.N) - (*it)->getDirection(r.at(i.t)));
-		vec3f specular = ks * pow(MAX(0,V.dot(R)),shininess*128);
-		Id += atten.elementwiseMult((*it)->getColor({0,0,0})).elementwiseMult(diffuse + specular);
-	}
-	Id.clamp();
-	return Id;
+	vec3f Id;
 }
