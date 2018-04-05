@@ -27,8 +27,11 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i ) const
 
 	vec3f Id = ke + ka.elementwiseMult(scene->ambient_light);
 	for (cliter it = scene->beginLights(); it != scene->endLights(); ++it) {
-		vec3f atten = (*it)->distanceAttenuation(r.at(i.t))*(*it)->shadowAttenuation(r.at(i.t));
-		vec3f diffuse = kd * ((i.N).dot((*it)->getDirection(r.at(i.t))));
+		//printf("light\n");
+		vec3f satten = (*it)->shadowAttenuation(r.at(i.t));
+		//std::cout << satten << std::endl;
+		vec3f atten = (*it)->distanceAttenuation(r.at(i.t))*satten;
+		vec3f diffuse = kd * MAX(0,(i.N).dot((*it)->getDirection(r.at(i.t))));
 		vec3f V = -r.getDirection();
 		vec3f R = (2 * ((*it)->getDirection(r.at(i.t)).dot(i.N) * i.N) - (*it)->getDirection(r.at(i.t)));
 		vec3f specular = ks * pow(MAX(0,V.dot(R)),shininess*128);

@@ -38,7 +38,7 @@ class PointLight
 	: public Light
 {
 public:
-	PointLight( Scene *scene, const vec3f& pos, const vec3f& color, float a = 0.25, float b = 0.25, float c = 0.5)
+	PointLight( Scene *scene, const vec3f& pos, const vec3f& color, float a = 0.25, float b = 0.01, float c = 0.01)
 		: Light( scene, color ), position( pos ), constant_attenuation_coeff( a ), linear_attenuation_coeff( b ), quadratic_attenuation_coeff ( c ) {}
 	virtual vec3f shadowAttenuation(const vec3f& P) const;
 	virtual double distanceAttenuation( const vec3f& P ) const;

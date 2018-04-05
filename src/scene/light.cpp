@@ -19,23 +19,41 @@ vec3f DirectionalLight::shadowAttenuation( const vec3f& P ) const
     // return vec3f(1,1,1);
 	
 	vec3f d = getDirection(P);
-	ray r(P, d);
-	vec3f atten = { 1, 1, 1 };
+	vec3f atten = {1, 1, 1};
 	vec3f tempP = P;
 	isect isec;
-	ray tempr(r);
+	ray tempr = ray(P,d);
 	// recursively find intersection
 	while (scene->intersect(tempr, isec)) {
 		// printf("test\n");
 		// a totally un-transparent object
-		if (isec.getMaterial().kt.iszero()) return { 0,0,0 };
+		if (isec.getMaterial().kt.iszero()) return vec3f(0,0,0);
 		// speed up the while loop when coming to small values
-		if (atten[0] < 0.01 && atten[1] < 0.01 && atten[2] < 0.01) return { 0,0,0 };
+		if (atten[0] < 0.004 && atten[1] < 0.004 && atten[2] < 0.004) { printf("test\n"); return vec3f(0, 0, 0); }
 		tempP = tempr.at(isec.t);
 		tempr = ray(tempP, d);
 		atten = atten.elementwiseMult(isec.getMaterial().kt);
 	}
 	return atten;
+	
+	//vec3f d = getDirection(P);
+
+	//// loop to get the attenuation
+	//vec3f curP = P;
+	//isect isecP;
+	//vec3f ret = getColor(P);
+	//ray r = ray(curP, d);
+	//while (scene->intersect(r, isecP))
+	//{
+	//	//if not transparent return black
+	//	if (isecP.getMaterial().kt.iszero()) return vec3f(0, 0, 0);
+	//	if (ret[0] < 0.004 && ret[1] < 0.004 && ret[2] < 0.004) { printf("test\n"); return vec3f(0, 0, 0); }
+	//	//use current intersection point as new light source
+	//	curP = r.at(isecP.t);
+	//	r = ray(curP, d);
+	//	ret = prod(ret, isecP.getMaterial().kt);
+	//}
+	//return ret;
 }
 
 vec3f DirectionalLight::getColor( const vec3f& P ) const
@@ -59,7 +77,8 @@ double PointLight::distanceAttenuation( const vec3f& P ) const
 	// return 1.0;
 	double d = P.distanceTo(position);
 	//printf("%lf %lf %lf\n", constant_attenuation_coeff, linear_attenuation_coeff, quadratic_attenuation_coeff);
-	return MIN(1, 1 / (constant_attenuation_coeff + linear_attenuation_coeff * d + quadratic_attenuation_coeff * d*d));
+	//printf("%lf\d", result);
+	return MIN(1, 1.0 / (constant_attenuation_coeff + linear_attenuation_coeff * d + quadratic_attenuation_coeff * d*d));
 }
 
 vec3f PointLight::getColor( const vec3f& P ) const
@@ -82,7 +101,7 @@ vec3f PointLight::shadowAttenuation(const vec3f& P) const
 	double distance = P.distanceTo(position);
 	vec3f d = (position - P).normalize();
 	ray r(P, d);
-	vec3f atten = { 1, 1, 1 };
+	vec3f atten = {1, 1, 1};
 	vec3f tempP = P;
 	isect isec;
 	ray tempr(r);
