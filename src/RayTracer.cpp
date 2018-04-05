@@ -204,7 +204,7 @@ vec3f RayTracer::reflectDirection(ray r, isect i, bool flipNormal) {
     negD *= -1; // the negitive ray direction
 
     vec3f normal = i.N.normalize();
-    if (flipNormal) { normal *= -1; }
+    if (!flipNormal) { normal *= -1; }
 
     return 2 * negD.dot(normal) * normal - negD;
 }

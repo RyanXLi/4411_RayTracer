@@ -49,7 +49,7 @@ private:
 
 	int			m_nSize;
 	int			m_nDepth;
-    double      m_nThresh;
+    double      m_nThresh = 0;
 
 // static class members
 	static Fl_Menu_Item menuitems[];
