@@ -263,6 +263,7 @@ TraceUI::TraceUI() {
 		m_sizeSlider->align(FL_ALIGN_RIGHT);
 		m_sizeSlider->callback(cb_sizeSlides);
 
+		// install slider threshold
         m_threshSlider = new Fl_Value_Slider(10, 80, 180, 20, "Threshold");
         m_threshSlider->user_data((void*)(this));	// record self to be used by static callback functions
         m_threshSlider->type(FL_HOR_NICE_SLIDER);
@@ -275,6 +276,7 @@ TraceUI::TraceUI() {
         m_threshSlider->align(FL_ALIGN_RIGHT);
         m_threshSlider->callback(cb_threshSlides);
 
+		// install slider sample number
         m_sampleNumSlider = new Fl_Value_Slider(10, 105, 180, 20, "Sample Number");
         m_sampleNumSlider->user_data((void*)(this));	// record self to be used by static callback functions
         m_sampleNumSlider->type(FL_HOR_NICE_SLIDER);
@@ -287,6 +289,7 @@ TraceUI::TraceUI() {
         m_sampleNumSlider->align(FL_ALIGN_RIGHT);
         m_sampleNumSlider->callback(cb_sampleNumSlides);
 
+		// install button jitter
         m_jitterLightButton = new Fl_Light_Button(10, 130, 70, 25, "Jitter");
         m_jitterLightButton->user_data((void*)(this));
         m_jitterLightButton->value(m_jitter);
