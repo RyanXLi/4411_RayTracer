@@ -34,18 +34,18 @@ public:
 	bool loadBackground(char* fn);
 	bool loadTexture(char* fn);
 
-	vec3f getBackgroundColor(int x, int y);
+	vec3f getBackgroundColor(double x, double y);
 
 	bool sceneLoaded();
 
     double* rayDistTable = nullptr;
 
-	bool texture_switch;
+	bool texture_switch, background_switch;
 
 private:
 	unsigned char *buffer;
-	unsigned char *background;
 	unsigned char *texture;
+	unsigned char *background;
 	int buffer_width, buffer_height;
 	int background_width, background_height;
 	int texture_width, texture_height;

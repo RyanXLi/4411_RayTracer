@@ -39,6 +39,7 @@ public:
     Fl_Light_Button*    m_adaptLightButton;
     Fl_Light_Button*    m_rayDistLightButton;
 	Fl_Light_Button*    m_textureLightButton;
+	Fl_Light_Button*    m_backgroundLightButton;
 
 
 	TraceGLWindow*		m_traceGlWindow;
@@ -68,6 +69,7 @@ private:
     bool        m_adapt = FALSE;
     bool        m_rayDist = FALSE;
 	bool		m_texture = FALSE;
+	bool		m_background = FALSE;
     double      m_gloss = 0;
 
 
@@ -79,6 +81,7 @@ private:
 	static void cb_load_scene(Fl_Menu_* o, void* v);
 	static void cb_save_image(Fl_Menu_* o, void* v);
 	static void cb_load_texture(Fl_Menu_* o, void* v);
+	static void cb_load_background(Fl_Menu_* o, void* v);
 	static void cb_exit(Fl_Menu_* o, void* v);
 	static void cb_about(Fl_Menu_* o, void* v);
 
@@ -96,6 +99,7 @@ private:
     static void cb_adapt(Fl_Widget* o, void* v);
     static void cb_rayDist(Fl_Widget* o, void* v);
 	static void cb_texture(Fl_Widget* o, void* v);
+	static void cb_background(Fl_Widget* o, void* v);
 };
 
 #endif
