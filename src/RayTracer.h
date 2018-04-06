@@ -30,17 +30,44 @@ public:
 
     bool isTIR(ray r, isect i, double n_i, double n_t);
 
+    bool loadHf(char * iname);
+
+    bool loadHfTexture(char * iname);
+
+    unsigned char * GetHfPixel(int x, int y);
+
+    unsigned char * RayTracer::GetHfTexPixel(int x, int y);
+
+    void processHf(Scene * scene, TransformNode * transform);
+
+    double getFresnelKr(double n1, double n2, ray r, isect i, bool flipNormal);
+
 	bool loadScene( char* fn );
 
 	bool sceneLoaded();
 
     double* rayDistTable = nullptr;
 
+    int getHfHeight() { return m_HfHeight; }
+    int getHfWidth() { return m_HfWidth; }
+
 private:
 	unsigned char *buffer;
 	int buffer_width, buffer_height;
 	int bufferSize;
 	Scene *scene;
+
+    int m_HfWidth;
+    int m_HfHeight;
+
+    int m_HfTexWidth;
+    int m_HfTexHeight;
+
+    unsigned char * m_HfBitmap;
+    unsigned char * m_HfTexBitmap;
+
+    bool m_HfLoaded = 0;
+    bool m_HfTexLoaded = 0;
 
 	bool m_bSceneLoaded;
 };

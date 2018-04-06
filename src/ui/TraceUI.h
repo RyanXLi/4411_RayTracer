@@ -38,6 +38,7 @@ public:
     Fl_Light_Button*    m_jitterLightButton;
     Fl_Light_Button*    m_adaptLightButton;
     Fl_Light_Button*    m_rayDistLightButton;
+    Fl_Light_Button*    m_fresnelLightButton;
 
 
 	TraceGLWindow*		m_traceGlWindow;
@@ -54,7 +55,8 @@ public:
     bool        isJitter() { return m_jitter; }
     bool        isAdaptive() { return m_adapt; }
     bool        isRayDist() { return m_rayDist; }
-    double        getGloss() { return m_gloss; }
+    double      getGloss() { return m_gloss; }
+    bool        isFresnel() { return m_fresnel; }
 
 private:
 	RayTracer*	raytracer;
@@ -66,7 +68,8 @@ private:
     bool        m_jitter = FALSE;
     bool        m_adapt = FALSE;
     bool        m_rayDist = FALSE;
-    double         m_gloss = 0;
+    double      m_gloss = 0;
+    bool        m_fresnel = FALSE;
 
 
 // static class members
@@ -76,6 +79,8 @@ private:
 
 	static void cb_load_scene(Fl_Menu_* o, void* v);
 	static void cb_save_image(Fl_Menu_* o, void* v);
+    static void cb_load_hf(Fl_Menu_* o, void* v);
+
 	static void cb_exit(Fl_Menu_* o, void* v);
 	static void cb_about(Fl_Menu_* o, void* v);
 
@@ -92,6 +97,7 @@ private:
     static void cb_jitter(Fl_Widget* o, void* v);
     static void cb_adapt(Fl_Widget* o, void* v);
     static void cb_rayDist(Fl_Widget* o, void* v);
+    static void cb_fresnel(Fl_Widget* o, void* v);
 };
 
 #endif

@@ -4,9 +4,11 @@
 #include <random>
 
 #include "RayTracer.h"
+#include "fileio/bitmap.h"
 #include "scene/light.h"
 #include "scene/material.h"
 #include "scene/ray.h"
+#include "SceneObjects/trimesh.h"
 #include "fileio/read.h"
 #include "fileio/parse.h"
 #include "ui/TraceUI.h"
@@ -92,38 +94,7 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
             //intensity += weights[0] * i.getMaterial().kr.elementwiseMult(
             //    traceRay(scene, mainRay, thresh / i.getMaterial().kr, depth - 1));
 
-            //int numTrials = 10;
             double glossFactor = traceUI->getGloss() / 70;
-            //printf("%f\n", glossFactor);
-
-            //std::mt19937 rng;
-            //rng.seed(std::random_device()());
-            //std::uniform_real_distribution<> dist(0.0, 1.0);
-            
-            //for (int j = 0; j < numTrials; j++) {
-            //    double rands[4];
-            //    for (int p = 0; p < 4; p++) {
-            //        rands[p] = dist(rng);
-            //        //printf("rand: %f\n", rands[p]);
-            //    }
-            //    //printf("\n");
-            //    vec3f dir((reflectDir.normalize() 
-            //        + glossFactor 
-            //            * ((perpVec[0] * rands[0])
-            //                + (perpVec[1] * rands[1])
-            //                + (perpVec[2] * rands[2])
-            //                + (perpVec[3] * rands[3])
-            //            ))
-            //        .normalize());
-            //   // printf("%f\n", dir[0]);
-            //   // printf("%f\n", dir[1]);
-            //   // printf("%f\n", dir[2]);
-            //   // printf("\n");
-            //    ray sideRay(r.at(i.t) + i.N.normalize() * NORMAL_EPSILON, 
-            //        (reflectDir.normalize() + glossFactor * perpVec[j]).normalize());
-            //    intensity += 1/(double)numTrials * i.getMaterial().kr.elementwiseMult(
-            //        traceRay(scene, sideRay, thresh / i.getMaterial().kr, depth - 1));
-            //}
 
             for (int j = 0; j < 16; j++) {
                 ray sideRay(r.at(i.t) + i.N.normalize() * NORMAL_EPSILON,
@@ -134,18 +105,28 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 
         }
         else {
+            
+            double multiplier = 1;
+            if (traceUI->isFresnel()) {
+                printf("%f\n", getFresnelKr(n_i, n_t, r, i, flipNormal));
+                multiplier = getFresnelKr(n_i, n_t, r, i, flipNormal);
+            }
             ray reflectRay(r.at(i.t) + i.N.normalize() * NORMAL_EPSILON, reflectDir.normalize());
-            intensity += i.getMaterial().kr.elementwiseMult(
+            intensity += multiplier * i.getMaterial().kr.elementwiseMult(
                 traceRay(scene, reflectRay, thresh / i.getMaterial().kr, depth - 1));
         }
 
-        
+       
         if (!isTIR(r, i, n_i, n_t)) {
-            //printf("refract");
             vec3f retractDir = retractDirection(r, i, n_i, n_t, flipNormal);
+            vec3f kt = i.getMaterial().kt;
+            double multiplier = 1;
+            if (traceUI->isFresnel()) {
+                multiplier = 1 - getFresnelKr(n_i, n_t, r, i, flipNormal);
+            }
             ray retractRay(r.at(i.t), retractDir.normalize());
-            intensity += i.getMaterial().kt.elementwiseMult(
-                traceRay(scene, retractRay, thresh / i.getMaterial().kt, depth - 1));
+            intensity += multiplier * kt.elementwiseMult(
+                traceRay(scene, retractRay, thresh / i.getMaterial().kt , depth - 1));
         }
         intensity = intensity.clamp();
 		return intensity;
@@ -159,6 +140,7 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 		return vec3f( 0.0, 0.0, 0.0 );
 	}
 }
+
 
 RayTracer::RayTracer()
 {
@@ -475,4 +457,168 @@ bool RayTracer::isTIR(ray r, isect i, double n_i, double n_t) {
         pow(i.N.normalize().dot(r.getDirection().normalize()), 2) <=
         1 - pow(n_t/n_i , 2)
         );
+}
+
+
+
+// from project 1:
+
+
+
+bool RayTracer::loadHf(char *iname) {
+    // try to open the image to read
+    unsigned char*	data;
+    int				width,
+        height;
+
+    if ((data = readBMP(iname, width, height)) == NULL) {
+        fl_alert("Can't load bitmap file");
+        return FALSE;
+    }
+
+    // reflect the fact of loading the new image
+    m_HfWidth = width;
+    m_HfHeight = height;
+
+    // release old storage
+    if (m_HfBitmap) delete[] m_HfBitmap;
+
+    m_HfBitmap = data;
+
+    m_HfLoaded = TRUE;
+
+    processHf(scene, &(TransformRoot()));
+
+    fl_alert("loaded trimesh");
+
+    return TRUE;
+}
+
+bool RayTracer::loadHfTexture(char *iname) {
+    // try to open the image to read
+    unsigned char*	data;
+    int				width,
+        height;
+
+
+    if ((data = readBMP(iname, width, height)) == NULL) {
+        fl_alert("Can't load bitmap file");
+        return FALSE;
+    }
+
+    // reflect the fact of loading the new image
+    m_HfTexWidth = width;
+    m_HfTexHeight = height;
+
+    // release old storage
+    if (m_HfTexBitmap) delete[] m_HfTexBitmap;
+
+    m_HfTexBitmap = data;
+
+    m_HfTexLoaded = TRUE;
+
+    return TRUE;
+}
+
+unsigned char * RayTracer::GetHfPixel(int x, int y) {
+    if (x < 0)
+        x = 0;
+    else if (x >= m_HfWidth)
+        x = m_HfWidth - 1;
+
+    if (y < 0)
+        y = 0;
+    else if (y >= m_HfHeight)
+        y = m_HfHeight - 1;
+
+    return (GLubyte*)(m_HfBitmap + 3 * (y*m_HfWidth + x));
+}
+
+unsigned char * RayTracer::GetHfTexPixel(int x, int y) {
+    if (x < 0)
+        x = 0;
+    else if (x >= m_HfTexWidth)
+        x = m_HfTexWidth - 1;
+
+    if (y < 0)
+        y = 0;
+    else if (y >= m_HfTexHeight)
+        y = m_HfTexHeight - 1;
+
+    return (GLubyte*)(m_HfTexBitmap + 3 * (y*m_HfTexWidth + x));
+}
+
+
+void RayTracer::processHf(Scene *scene,
+     TransformNode *transform) {
+
+    Material *mat = new Material();
+    mat->kd = vec3f(0, 1.0, 0); // temporary
+    Trimesh *obj = new Trimesh(scene, mat, transform);
+
+
+
+    int height = getHfHeight();
+    int width = getHfWidth();
+    for (int y = 0; y < height; ++y) {
+        for (int x = 0; x < width; ++x) {
+            int pos = y * width + x;
+            unsigned char pixel[3];
+            memcpy(pixel, m_HfBitmap + pos * 3, 3);
+            double height = double(pixel[0] + pixel[1] + pixel[2]) / 3 ;
+            vec3f point(x, y, height);
+            obj->addVertex(point);
+            if (x > 0 && y > 0) {
+                obj->addFace(pos, pos - 1, pos - 1 - width);
+                obj->addFace(pos, pos - 1 - width, pos - width);
+            }
+
+            //cout << height << endl;
+        }
+    }
+
+    char *error;
+    if (error = obj->doubleCheck()) { throw ParseError(error); }
+
+    scene->add(obj);
+
+
+    //add a pointlight
+    PointLight* point_light = new PointLight(scene, vec3f(width, height, 10), vec3f(1.0, 1.0, 1.0));
+    scene->add(point_light);
+
+    //set the camera
+    vec3f map_center((double)width / 2 - 0.5, (double)height / 2 - 0.5, 0.5);
+    double camera_distance = (double)width + 3.0;
+    vec3f camera_pos(0, -camera_distance, 2 * camera_distance);
+    camera_pos += map_center;
+    scene->getCamera()->setEye(camera_pos);
+    scene->getCamera()->setLook((map_center - camera_pos).normalize(), vec3f(0, 0, 1).normalize());
+
+
+    scene->initScene();
+
+}
+
+
+
+double RayTracer::getFresnelKr(double n1, double n2, ray r, isect i, bool flipNormal) {
+    
+    vec3f N = flipNormal ? i.N : -i.N;
+
+    double R0 = ((n1 - n2) / (n1 + n2)) * (n1 - n2) / (n1 + n2);
+
+    double cos = - r.getDirection().normalize().dot(N);
+
+
+    if (n1 > n2) {
+        double sinsq = (n1 / n2) * (n1 / n2) * (1.0 - cos * cos);
+        // Total internal reflection
+        if (sinsq > 1.0)
+            return 1.0;
+        cos = sqrt(1.0 - sinsq);
+    }
+
+    return (R0 + (1 - R0)*(1-cos)*(1 - cos)*(1 - cos)*(1 - cos)*(1 - cos));
+
 }
