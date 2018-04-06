@@ -113,7 +113,7 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
             }
             ray reflectRay(r.at(i.t) + i.N.normalize() * NORMAL_EPSILON, reflectDir.normalize());
             intensity += multiplier * i.getMaterial().kr.elementwiseMult(
-                traceRay(scene, reflectRay, thresh / i.getMaterial().kr, depth - 1));
+                traceRay(scene, reflectRay, thresh , depth - 1));
         }
 
        
@@ -126,7 +126,7 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
             }
             ray retractRay(r.at(i.t), retractDir.normalize());
             intensity += multiplier * kt.elementwiseMult(
-                traceRay(scene, retractRay, thresh / i.getMaterial().kt , depth - 1));
+                traceRay(scene, retractRay, thresh  , depth - 1));
         }
         intensity = intensity.clamp();
 		return intensity;
