@@ -30,6 +30,7 @@ public:
 	Fl_Slider*			m_depthSlider;
     Fl_Slider*			m_threshSlider;
     Fl_Slider*			m_sampleNumSlider;
+    Fl_Slider*          m_glossSlider;
 
 	Fl_Button*			m_renderButton;
 	Fl_Button*			m_stopButton;
@@ -37,6 +38,7 @@ public:
     Fl_Light_Button*    m_jitterLightButton;
     Fl_Light_Button*    m_adaptLightButton;
     Fl_Light_Button*    m_rayDistLightButton;
+
 
 	TraceGLWindow*		m_traceGlWindow;
 
@@ -52,6 +54,7 @@ public:
     bool        isJitter() { return m_jitter; }
     bool        isAdaptive() { return m_adapt; }
     bool        isRayDist() { return m_rayDist; }
+    double        getGloss() { return m_gloss; }
 
 private:
 	RayTracer*	raytracer;
@@ -63,6 +66,8 @@ private:
     bool        m_jitter = FALSE;
     bool        m_adapt = FALSE;
     bool        m_rayDist = FALSE;
+    double         m_gloss = 0;
+
 
 // static class members
 	static Fl_Menu_Item menuitems[];
@@ -80,6 +85,7 @@ private:
 	static void cb_depthSlides(Fl_Widget* o, void* v);
     static void cb_threshSlides(Fl_Widget* o, void* v);
     static void cb_sampleNumSlides(Fl_Widget* o, void* v);
+    static void cb_glossSlides(Fl_Widget* o, void* v);
 
 	static void cb_render(Fl_Widget* o, void* v);
 	static void cb_stop(Fl_Widget* o, void* v);
