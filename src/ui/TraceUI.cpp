@@ -82,6 +82,24 @@ void TraceUI::cb_load_hf(Fl_Menu_ * o, void * v) {
     }
 }
 
+void TraceUI::cb_load_texture(Fl_Menu_ * o, void * v)
+{
+	TraceUI* pUI = whoami(o);
+	char* newfile = fl_file_chooser("Open Texture?", "*.bmp", NULL);
+	if (newfile != NULL) {
+		pUI->raytracer->loadTexture(newfile);
+	}
+}
+
+void TraceUI::cb_load_background(Fl_Menu_ * o, void * v)
+{
+	TraceUI* pUI = whoami(o);
+	char* newfile = fl_file_chooser("Open Background?", "*.bmp", NULL);
+	if (newfile != NULL) {
+		pUI->raytracer->loadBackground(newfile);
+	}
+}
+
 void TraceUI::cb_exit(Fl_Menu_* o, void* v)
 {
 	TraceUI* pUI=whoami(o);
@@ -233,6 +251,16 @@ void TraceUI::cb_fresnel(Fl_Widget * o, void * v) {
     ((TraceUI*)(o->user_data()))->m_fresnel ^= true;
 }
 
+void TraceUI::cb_texture(Fl_Widget * o, void * v)
+{
+	((TraceUI*)(o->user_data()))->raytracer->texture_switch = ((TraceUI*)(o->user_data()))->m_texture ^= true;
+}
+
+void TraceUI::cb_background(Fl_Widget * o, void * v)
+{
+	((TraceUI*)(o->user_data()))->raytracer->background_switch = ((TraceUI*)(o->user_data()))->m_background ^= true;
+}
+
 void TraceUI::show()
 {
 	m_mainWindow->show();
@@ -264,6 +292,8 @@ Fl_Menu_Item TraceUI::menuitems[] = {
 		{ "&Load Scene...",	FL_ALT + 'l', (Fl_Callback *)TraceUI::cb_load_scene },
 		{ "&Save Image...",	FL_ALT + 's', (Fl_Callback *)TraceUI::cb_save_image },
         { "&Load Height Field...",	FL_ALT + 'h', (Fl_Callback *)TraceUI::cb_load_hf },
+		{ "&Load Texture...",	FL_ALT + 't', (Fl_Callback *)TraceUI::cb_load_texture },
+		{ "&Load Background...",	FL_ALT + 't', (Fl_Callback *)TraceUI::cb_load_background },
 		{ "&Exit",			FL_ALT + 'e', (Fl_Callback *)TraceUI::cb_exit },
 		{ 0 },
 
@@ -336,7 +366,7 @@ TraceUI::TraceUI() {
         m_sampleNumSlider->align(FL_ALIGN_RIGHT);
         m_sampleNumSlider->callback(cb_sampleNumSlides);
 
-		// install button jitter
+		// install buttons
         m_jitterLightButton = new Fl_Light_Button(10, 130, 70, 25, "Jitter");
         m_jitterLightButton->user_data((void*)(this));
         m_jitterLightButton->value(m_jitter);
@@ -363,6 +393,16 @@ TraceUI::TraceUI() {
         m_glossSlider->value(m_gloss);
         m_glossSlider->align(FL_ALIGN_RIGHT);
         m_glossSlider->callback(cb_glossSlides);
+
+		m_textureLightButton = new Fl_Light_Button(10, 210, 70, 25, "Texture");
+		m_textureLightButton->user_data((void*)(this));
+		m_textureLightButton->value(m_texture);
+		m_textureLightButton->callback(cb_texture);
+
+		m_backgroundLightButton = new Fl_Light_Button(100, 210, 70, 25, "Background");
+		m_backgroundLightButton->user_data((void*)(this));
+		m_backgroundLightButton->value(m_background);
+		m_backgroundLightButton->callback(cb_background);
 
         m_fresnelLightButton = new Fl_Light_Button(10, 190, 70, 25, "Fresnel");
         m_fresnelLightButton->user_data((void*)(this));

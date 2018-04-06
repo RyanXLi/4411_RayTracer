@@ -43,17 +43,27 @@ public:
     double getFresnelKr(double n1, double n2, ray r, isect i, bool flipNormal);
 
 	bool loadScene( char* fn );
+	bool loadBackground(char* fn);
+	bool loadTexture(char* fn);
+
+	vec3f getBackgroundColor(double x, double y);
 
 	bool sceneLoaded();
 
     double* rayDistTable = nullptr;
+
+	bool texture_switch, background_switch;
 
     int getHfHeight() { return m_HfHeight; }
     int getHfWidth() { return m_HfWidth; }
 
 private:
 	unsigned char *buffer;
+	unsigned char *texture;
+	unsigned char *background;
 	int buffer_width, buffer_height;
+	int background_width, background_height;
+	int texture_width, texture_height;
 	int bufferSize;
 	Scene *scene;
 
@@ -70,6 +80,7 @@ private:
     bool m_HfTexLoaded = 0;
 
 	bool m_bSceneLoaded;
+
 };
 
 #endif // __RAYTRACER_H__

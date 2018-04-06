@@ -11,6 +11,7 @@
 #include "SceneObjects/trimesh.h"
 #include "fileio/read.h"
 #include "fileio/parse.h"
+#include "fileio/bitmap.h"
 #include "ui/TraceUI.h"
 
 extern TraceUI* traceUI;
@@ -49,7 +50,9 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 		// rays.
 
 		const Material& m = i.getMaterial();
-        intensity = m.shade(scene, r, i);
+		//printf("%d %d\n", texture_width, texture_height);
+		if (texture_switch && texture) intensity = m.shade(scene, r, i, texture, texture_width, texture_height);
+        else intensity = m.shade(scene, r, i);
 
 
 
@@ -135,9 +138,10 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 		// No intersection.  This ray travels to infinity, so we color
 		// it according to the background color, which in this (simple) case
 		// is just black.
+		// return vec3f( 0.0, 0.0, 0.0 );
 
-
-		return vec3f( 0.0, 0.0, 0.0 );
+		if (background_switch && background) return getBackgroundColor(scene->getCamera()->xx, scene->getCamera()->yy);
+		else return vec3f(0, 0, 0);
 	}
 }
 
@@ -147,14 +151,21 @@ RayTracer::RayTracer()
 	buffer = NULL;
 	buffer_width = buffer_height = 256;
 	scene = NULL;
-
+	texture = NULL;
+	background = NULL;
+	background_width = background_height = 0;
+	texture_width = texture_height = 0;
 	m_bSceneLoaded = false;
+	texture_switch = false;
+	background_switch = false;
 }
 
 
 RayTracer::~RayTracer()
 {
-	delete [] buffer;
+	if (buffer) delete [] buffer;
+	if (texture) delete [] texture;
+	if (background) delete[] background;
 	delete scene;
 }
 
@@ -204,6 +215,50 @@ bool RayTracer::loadScene( char* fn )
 	m_bSceneLoaded = true;
 
 	return true;
+}
+
+bool RayTracer::loadBackground(char * fn)
+{
+	unsigned char * data = NULL;
+	data = readBMP(fn, background_width, background_height);
+	if (data) {
+		// check
+		if (texture != NULL) delete[] background;
+		background = data;
+	}
+	else return false;
+	return true;
+}
+
+bool RayTracer::loadTexture(char * fn)
+{
+	unsigned char * data = NULL;
+	data = readBMP(fn, texture_width, texture_height);
+	if (data) {
+		// check
+		if (texture != NULL) delete[] texture;
+		texture = data;
+	}
+	else return false;
+	return true;
+}
+
+vec3f RayTracer::getBackgroundColor(double u, double v)
+{
+	if (u < 0 || u > 1 || v < 0 || v > 1) {
+		printf("wrong u,v axis for background\n");
+		return vec3f(1, 1, 1);
+	}
+	if (u == 1) u = 0;
+	if (v == 1) v = 0;
+	int x = u * background_width;
+	int y = v * background_height;
+	//printf("%d %d\n", x, y);
+	double r = background[3 * (x + y * background_width)] / 255.0;
+	double g = background[3 * (x + y * background_width) + 1] / 255.0;
+	double b = background[3 * (x + y * background_width) + 2] / 255.0;
+	//printf("%lf %lf %lf\n", r, g, b);
+	return vec3f(r, g, b);
 }
 
 void RayTracer::traceSetup( int w, int h )
