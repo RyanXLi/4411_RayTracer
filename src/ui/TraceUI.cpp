@@ -110,6 +110,10 @@ void TraceUI::cb_sampleNumSlides(Fl_Widget* o, void* v) {
     ((TraceUI*)(o->user_data()))->m_sampleNum = double(((Fl_Slider *)o)->value());
 }
 
+void TraceUI::cb_glossSlides(Fl_Widget * o, void * v) {
+    ((TraceUI*)(o->user_data()))->m_gloss = double(((Fl_Slider *)o)->value());
+}
+
 void TraceUI::cb_render(Fl_Widget* o, void* v)
 {
 	char buffer[256];
@@ -327,6 +331,18 @@ TraceUI::TraceUI() {
         m_rayDistLightButton->user_data((void*)(this));
         m_rayDistLightButton->value(m_rayDist);
         m_rayDistLightButton->callback(cb_rayDist);
+
+        m_glossSlider = new Fl_Value_Slider(10, 160, 180, 20, "Gloss");
+        m_glossSlider->user_data((void*)(this));	// record self to be used by static callback functions
+        m_glossSlider->type(FL_HOR_NICE_SLIDER);
+        m_glossSlider->labelfont(FL_COURIER);
+        m_glossSlider->labelsize(12);
+        m_glossSlider->minimum(0);
+        m_glossSlider->maximum(5);
+        m_glossSlider->step(1);
+        m_glossSlider->value(m_gloss);
+        m_glossSlider->align(FL_ALIGN_RIGHT);
+        m_glossSlider->callback(cb_glossSlides);
 
 		m_textureLightButton = new Fl_Light_Button(10, 210, 70, 25, "Texture");
 		m_textureLightButton->user_data((void*)(this));

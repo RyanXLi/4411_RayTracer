@@ -1,6 +1,7 @@
 // The main ray tracer.
 
 #include <Fl/fl_ask.h>
+#include <random>
 
 #include "RayTracer.h"
 #include "scene/light.h"
@@ -67,9 +68,80 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
         }
 
         vec3f reflectDir = reflectDirection(r, i, flipNormal);
-        ray reflectRay(r.at(i.t) + i.N.normalize() * NORMAL_EPSILON, reflectDir.normalize());
-        intensity += i.getMaterial().kr.elementwiseMult(
-            traceRay(scene, reflectRay, thresh / i.getMaterial().kr, depth - 1));
+        if (traceUI->getGloss() > 0) {
+            vec3f perpVec[16];
+            perpVec[0] = reflectDir.cross(i.N).normalize();
+            perpVec[1] = -perpVec[0];
+            perpVec[2] = reflectDir.cross(perpVec[0]).normalize();
+            perpVec[3] = -perpVec[2];
+
+            perpVec[4] = (perpVec[0] + perpVec[2]).normalize();
+            perpVec[5] = (perpVec[1] + perpVec[3]).normalize();
+            perpVec[6] = (perpVec[2] + perpVec[1]).normalize();
+            perpVec[7] = (perpVec[3] + perpVec[0]).normalize();
+
+            perpVec[8] = (perpVec[3] + perpVec[7]).normalize();
+            perpVec[9] = (perpVec[7] + perpVec[0]).normalize();
+            perpVec[10] = (perpVec[0] + perpVec[4]).normalize();
+            perpVec[11] = (perpVec[4] + perpVec[2]).normalize();
+
+            perpVec[12] = (perpVec[2] + perpVec[6]).normalize();
+            perpVec[13] = (perpVec[6] + perpVec[1]).normalize();
+            perpVec[14] = (perpVec[1] + perpVec[5]).normalize();
+            perpVec[15] = (perpVec[5] + perpVec[3]).normalize();
+            
+
+            //ray mainRay(r.at(i.t) + i.N.normalize() * NORMAL_EPSILON, reflectDir.normalize());
+            //intensity += weights[0] * i.getMaterial().kr.elementwiseMult(
+            //    traceRay(scene, mainRay, thresh / i.getMaterial().kr, depth - 1));
+
+            //int numTrials = 10;
+            double glossFactor = traceUI->getGloss() / 70;
+            //printf("%f\n", glossFactor);
+
+            //std::mt19937 rng;
+            //rng.seed(std::random_device()());
+            //std::uniform_real_distribution<> dist(0.0, 1.0);
+            
+            //for (int j = 0; j < numTrials; j++) {
+            //    double rands[4];
+            //    for (int p = 0; p < 4; p++) {
+            //        rands[p] = dist(rng);
+            //        //printf("rand: %f\n", rands[p]);
+            //    }
+            //    //printf("\n");
+            //    vec3f dir((reflectDir.normalize() 
+            //        + glossFactor 
+            //            * ((perpVec[0] * rands[0])
+            //                + (perpVec[1] * rands[1])
+            //                + (perpVec[2] * rands[2])
+            //                + (perpVec[3] * rands[3])
+            //            ))
+            //        .normalize());
+            //   // printf("%f\n", dir[0]);
+            //   // printf("%f\n", dir[1]);
+            //   // printf("%f\n", dir[2]);
+            //   // printf("\n");
+            //    ray sideRay(r.at(i.t) + i.N.normalize() * NORMAL_EPSILON, 
+            //        (reflectDir.normalize() + glossFactor * perpVec[j]).normalize());
+            //    intensity += 1/(double)numTrials * i.getMaterial().kr.elementwiseMult(
+            //        traceRay(scene, sideRay, thresh / i.getMaterial().kr, depth - 1));
+            //}
+
+            for (int j = 0; j < 16; j++) {
+                ray sideRay(r.at(i.t) + i.N.normalize() * NORMAL_EPSILON,
+                    (reflectDir.normalize() + glossFactor * perpVec[j]).normalize());
+                intensity += 1 / 16.0 * i.getMaterial().kr.elementwiseMult(
+                    traceRay(scene, sideRay, thresh / i.getMaterial().kr, depth - 1));
+            }
+
+        }
+        else {
+            ray reflectRay(r.at(i.t) + i.N.normalize() * NORMAL_EPSILON, reflectDir.normalize());
+            intensity += i.getMaterial().kr.elementwiseMult(
+                traceRay(scene, reflectRay, thresh / i.getMaterial().kr, depth - 1));
+        }
+
         
         if (!isTIR(r, i, n_i, n_t)) {
             //printf("refract");
@@ -312,7 +384,7 @@ void RayTracer::tracePixel( int i, int j )
                 double val = rayDistTable[(int)(x*buffer_width) + (int)(y*buffer_height)*buffer_width];
                 if (val > 0.001) {
                     //printf("idx: %f\n", (int)(x*buffer_width) + (int)(y*buffer_height)*buffer_width);
-                    printf("val: %f\n", val);
+                    //printf("val: %f\n", val);
                 }
                 col = { val, val, val };
             }
@@ -376,7 +448,7 @@ vec3f RayTracer::traceCorners(double x, double y, double sideX, double sideY, in
             || (centerCol[1] - cornerCol[1] > adaptThres)
             || (centerCol[2] - cornerCol[2] > adaptThres)
             ) {
-            printf("%d", depth);
+            //printf("%d", depth);
             if (traceUI->isRayDist() && depth > 1) { 
                 rayDistTable[(int)(x*buffer_width) + (int)(y*buffer_height)*buffer_width] = 1 / (depth-1); 
             }

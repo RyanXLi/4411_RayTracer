@@ -37,9 +37,9 @@ In many cases, the material in the Foley, et al. book goes into more depth on a 
 
 Remember that you'll need to establish to our satisfaction that you've implemented the extension! You should have test cases that *clearly demonstrate* the effect of the code you've added to the ray tracer. Sometimes different extensions can interact, making it hard to tell how each contributed to the final image, so it's also helpful (that is, necessary!) to add controls to selectively enable and disable your extensions.
 
-- [ ] (0.5)Implement an **adaptive termination** criterion for tracing rays, based on ray contribution.  Control the adaptation  threshold with a slider.
+- [x] (0.5)Implement an **adaptive termination** criterion for tracing rays, based on ray contribution.  Control the adaptation  threshold with a slider.
 
-- [ ] (0.5)Implement **antialiasing by supersampling and averaging** **down**.  You must provide a slider that indicates the number of sub-pixel samples being used (e.g., something in the range 1-5 indicating 1x1, 2x2, ... 5x5 supersampling). This whistle upgrades to a bell if you implement the first stage of distribution ray tracing by **jittering** the sub-pixel samples.  The noise introduced by jittering should be evident when casting 1 ray per pixel.
+- [x] (0.5)Implement **antialiasing by supersampling and averaging** **down**.  You must provide a slider that indicates the number of sub-pixel samples being used (e.g., something in the range 1-5 indicating 1x1, 2x2, ... 5x5 supersampling). This whistle upgrades to a bell if you implement the first stage of distribution ray tracing by **jittering** the sub-pixel samples.  The noise introduced by jittering should be evident when casting 1 ray per pixel.
 
 - [ ] (1)Implement **spot lights**.
 
@@ -52,7 +52,7 @@ Remember that you'll need to establish to our satisfaction that you've implement
 
 - [ ] (1.5)Add **texture mapping** support to the program. The most basic kind of texture mapping is to apply the map to the diffuse color of a surface. But many other parameters can be mapped. Reflected color can be mapped to create the sense of a surrounding environment. Transparency can be mapped to create holes in objects. Additional (variable) extra credit will be given for such additional mappings.  You will need to modify the parser for handling texture mapping inputs the types of mapping mentioned above.  Additional credit will be awarded for quality implementation of texture mapping on general trimeshes.
 
-- [ ] (1.5)Implement **antialiasing by adaptive supersampling**, as described in Foley, et al., 15.10.4.  For full credit, you must show some sort of visualization of the sampling pattern that results.  For example, you could create another image where each pixel is given an intensity proportional to the number of rays used to calculate the color of the corresponding pixel in the ray traced image.  Implementing this bell/whistle is a big win -- nice antialiasing at low cost.
+- [x] (1.5)Implement **antialiasing by adaptive supersampling**, as described in Foley, et al., 15.10.4.  For full credit, you must show some sort of visualization of the sampling pattern that results.  For example, you could create another image where each pixel is given an intensity proportional to the number of rays used to calculate the color of the corresponding pixel in the ray traced image.  Implementing this bell/whistle is a big win -- nice antialiasing at low cost.
 
 - [ ] (1.5)Implement more versatile lighting controls, such as the **Warn model** described in Foley 16.1.5. This allows you to do things like control the shape of the projected light.
 
