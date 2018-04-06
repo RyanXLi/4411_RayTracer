@@ -31,18 +31,29 @@ public:
     bool isTIR(ray r, isect i, double n_i, double n_t);
 
 	bool loadScene( char* fn );
+	bool loadBackground(char* fn);
+	bool loadTexture(char* fn);
+
+	vec3f getBackgroundColor(int x, int y);
 
 	bool sceneLoaded();
 
     double* rayDistTable = nullptr;
 
+	bool texture_switch;
+
 private:
 	unsigned char *buffer;
+	unsigned char *background;
+	unsigned char *texture;
 	int buffer_width, buffer_height;
+	int background_width, background_height;
+	int texture_width, texture_height;
 	int bufferSize;
 	Scene *scene;
 
 	bool m_bSceneLoaded;
+
 };
 
 #endif // __RAYTRACER_H__

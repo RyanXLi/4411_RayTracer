@@ -8,6 +8,7 @@
 #include "scene/ray.h"
 #include "fileio/read.h"
 #include "fileio/parse.h"
+#include "fileio/bitmap.h"
 #include "ui/TraceUI.h"
 
 extern TraceUI* traceUI;
@@ -46,7 +47,9 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 		// rays.
 
 		const Material& m = i.getMaterial();
-        intensity = m.shade(scene, r, i);
+		//printf("%d %d\n", texture_width, texture_height);
+		if (texture_switch && texture) intensity = m.shade(scene, r, i, texture, texture_width, texture_height);
+        else intensity = m.shade(scene, r, i);
 
 
 
@@ -93,14 +96,17 @@ RayTracer::RayTracer()
 	buffer = NULL;
 	buffer_width = buffer_height = 256;
 	scene = NULL;
-
+	texture = NULL;
+	texture_width = texture_height = 0;
 	m_bSceneLoaded = false;
+	texture_switch = false;
 }
 
 
 RayTracer::~RayTracer()
 {
-	delete [] buffer;
+	if (buffer) delete [] buffer;
+	if (texture) delete [] texture;
 	delete scene;
 }
 
@@ -149,6 +155,19 @@ bool RayTracer::loadScene( char* fn )
 	
 	m_bSceneLoaded = true;
 
+	return true;
+}
+
+bool RayTracer::loadTexture(char * fn)
+{
+	unsigned char * data = NULL;
+	data = readBMP(fn, texture_width, texture_height);
+	if (data) {
+		// check
+		if (texture != NULL) delete[] texture;
+		texture = data;
+	}
+	else return false;
 	return true;
 }
 

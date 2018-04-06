@@ -37,6 +37,7 @@ public:
     Fl_Light_Button*    m_jitterLightButton;
     Fl_Light_Button*    m_adaptLightButton;
     Fl_Light_Button*    m_rayDistLightButton;
+	Fl_Light_Button*    m_textureLightButton;
 
 	TraceGLWindow*		m_traceGlWindow;
 
@@ -63,6 +64,7 @@ private:
     bool        m_jitter = FALSE;
     bool        m_adapt = FALSE;
     bool        m_rayDist = FALSE;
+	bool		m_texture = FALSE;
 
 // static class members
 	static Fl_Menu_Item menuitems[];
@@ -71,6 +73,7 @@ private:
 
 	static void cb_load_scene(Fl_Menu_* o, void* v);
 	static void cb_save_image(Fl_Menu_* o, void* v);
+	static void cb_load_texture(Fl_Menu_* o, void* v);
 	static void cb_exit(Fl_Menu_* o, void* v);
 	static void cb_about(Fl_Menu_* o, void* v);
 
@@ -86,6 +89,7 @@ private:
     static void cb_jitter(Fl_Widget* o, void* v);
     static void cb_adapt(Fl_Widget* o, void* v);
     static void cb_rayDist(Fl_Widget* o, void* v);
+	static void cb_texture(Fl_Widget* o, void* v);
 };
 
 #endif
