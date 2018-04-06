@@ -394,12 +394,12 @@ TraceUI::TraceUI() {
         m_glossSlider->align(FL_ALIGN_RIGHT);
         m_glossSlider->callback(cb_glossSlides);
 
-		m_textureLightButton = new Fl_Light_Button(10, 210, 70, 25, "Texture");
+		m_textureLightButton = new Fl_Light_Button(10, 230, 70, 25, "Texture");
 		m_textureLightButton->user_data((void*)(this));
 		m_textureLightButton->value(m_texture);
 		m_textureLightButton->callback(cb_texture);
 
-		m_backgroundLightButton = new Fl_Light_Button(100, 210, 70, 25, "Background");
+		m_backgroundLightButton = new Fl_Light_Button(100, 230, 70, 25, "Background");
 		m_backgroundLightButton->user_data((void*)(this));
 		m_backgroundLightButton->value(m_background);
 		m_backgroundLightButton->callback(cb_background);

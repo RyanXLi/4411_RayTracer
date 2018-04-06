@@ -73,7 +73,6 @@ private:
 	bool		m_texture = FALSE;
 	bool		m_background = FALSE;
     double      m_gloss = 0;
-    double      m_gloss = 0;
     bool        m_fresnel = FALSE;
 
 
