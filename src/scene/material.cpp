@@ -3,6 +3,7 @@
 #include "light.h"
 
 #define MAX(a,b) (a > b ? a : b)
+#define MIN(a,b) (a < b ? a : b)
 #define M_PI 3.14159265357
 
 typedef list<Light*>::iterator 			liter;
@@ -13,7 +14,7 @@ vec3f TextureMapping(const unsigned char* texture, int width, int height, const 
 
 // Apply the phong model to this point on the surface of the object, returning
 // the color of that point.
-vec3f Material::shade( Scene *scene, const ray& r, const isect& i, const unsigned char * texture, const int w, const int h) const
+vec3f Material::shade( Scene *scene, const ray& r, isect& i, const unsigned char * texture, const int w, const int h, const unsigned char* bump) const
 {
 	// YOUR CODE HERE
 
@@ -41,6 +42,27 @@ vec3f Material::shade( Scene *scene, const ray& r, const isect& i, const unsigne
 			kdofuse = TextureMapping(texture, w, h, r, i);
 		}
 		else kdofuse = kd;
+		if (bump) {
+			vec3f Sp(0, 0, 1);
+			vec3f Se(1, 0, 0);
+			vec3f Sn = (i.N).normalize();
+			double cosphi = Sp.dot(Sn);
+			double sinphi = sqrt(1 - cosphi * cosphi);
+			double phi = acosf(Sp.dot(Sn));
+			double v = phi / M_PI;
+			double theta = acosf(((Se.dot(Sn))) / sinphi);
+			double u = 0;
+			if ((Sp.cross(Se)).dot(Sn) > 0) u = theta / 2 / M_PI;
+			else u = 1 - theta / 2 / M_PI;
+			int x = MAX(0,MIN(u * w, w - 1));
+			int y = MAX(0,MIN(v * h, h - 1));
+			double Bu = -bump[x + y * w] + bump[MIN(x + 1, w - 1) + y * w];
+			double Bv = -bump[x + y * w] + bump[x + MIN(y + 1, h - 1)*w];
+			vec3f Pu(0.0, 1.0, 0.0);
+			vec3f Pv(1.0, 0.0, 0.0);
+			i.N = i.N + (Bu * i.N).cross(Pv) + (Bv*i.N).cross(Pu);
+			i.N = (i.N).normalize();
+		}
 		vec3f diffuse = kdofuse * MAX(0,(i.N).dot((*it)->getDirection(r.at(i.t))));
 		vec3f V = -r.getDirection();
 		vec3f R = (2 * ((*it)->getDirection(r.at(i.t)).dot(i.N) * i.N) - (*it)->getDirection(r.at(i.t)));

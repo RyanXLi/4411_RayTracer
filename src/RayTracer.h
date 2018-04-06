@@ -33,6 +33,7 @@ public:
 	bool loadScene( char* fn );
 	bool loadBackground(char* fn);
 	bool loadTexture(char* fn);
+	bool loadBump(char* fn);
 
 	vec3f getBackgroundColor(double x, double y);
 
@@ -40,15 +41,17 @@ public:
 
     double* rayDistTable = nullptr;
 
-	bool texture_switch, background_switch;
+	bool texture_switch, background_switch, bump_switch;
 
 private:
 	unsigned char *buffer;
 	unsigned char *texture;
 	unsigned char *background;
+	unsigned char *bump;
 	int buffer_width, buffer_height;
 	int background_width, background_height;
 	int texture_width, texture_height;
+	int bump_width, bump_height;
 	int bufferSize;
 	Scene *scene;
 

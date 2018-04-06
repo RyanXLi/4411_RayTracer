@@ -5,8 +5,8 @@ SBT-raytracer 1.0
 
 camera
 {
-	position = (0, 0, 15);
-	viewdir = (0, 0, -1);
+	position = (-20, 0, 15);
+	viewdir = (1, 0, -1);
 	updir = (-1, 0, 0);
 }
 
@@ -14,10 +14,69 @@ camera
 spot_light
 {
 	position = (0, 0, 1);
-	color = (1, 1, 1);
+	color = (0, 1, 1);
 	direction = (0, 0, -1);
-	coneangle = 60;
-	focus_constraint = 3;
+	coneangle = 30;
+	focus_constraint = 4;
+	constant_attenuation_coeff= 0.25;
+	linear_attenuation_coeff = 0.003372407;
+	quadratic_attenuation_coeff = 0.000045492;
+}
+
+spot_light
+{
+	position = (0, 4, 1);
+	color = (0, 1, 1);
+	direction = (0, 0, -1);
+	coneangle = 30;
+	focus_constraint = 1;
+	constant_attenuation_coeff= 0.25;
+	linear_attenuation_coeff = 0.003372407;
+	quadratic_attenuation_coeff = 0.000045492;
+}
+
+spot_light
+{
+	position = (0, -4, 1);
+	color = (0, 1, 1);
+	direction = (0, 0, -1);
+	coneangle = 30;
+	focus_constraint = 32;
+	constant_attenuation_coeff= 0.25;
+	linear_attenuation_coeff = 0.003372407;
+	quadratic_attenuation_coeff = 0.000045492;
+}
+spot_light
+{
+	position = (-4, -4, 1);
+	color = (0, 1, 1);
+	direction = (0, 0, -1);
+	coneangle = 15;
+	focus_constraint = 1;
+	constant_attenuation_coeff= 0.25;
+	linear_attenuation_coeff = 0.003372407;
+	quadratic_attenuation_coeff = 0.000045492;
+}
+
+spot_light
+{
+	position = (-4, 0, 1);
+	color = (0, 1, 1);
+	direction = (0, 0, -1);
+	coneangle = 30;
+	focus_constraint = 1;
+	constant_attenuation_coeff= 0.25;
+	linear_attenuation_coeff = 0.003372407;
+	quadratic_attenuation_coeff = 0.000045492;
+}
+
+spot_light
+{
+	position = (-4, 4, 1);
+	color = (0, 1, 1);
+	direction = (0, 0, -1);
+	coneangle = 45;
+	focus_constraint = 1;
 	constant_attenuation_coeff= 0.25;
 	linear_attenuation_coeff = 0.003372407;
 	quadratic_attenuation_coeff = 0.000045492;

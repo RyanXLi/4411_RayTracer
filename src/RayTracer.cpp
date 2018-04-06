@@ -49,9 +49,10 @@ vec3f RayTracer::traceRay( Scene *scene, const ray& r,
 
 		const Material& m = i.getMaterial();
 		//printf("%d %d\n", texture_width, texture_height);
-		if (texture_switch && texture) intensity = m.shade(scene, r, i, texture, texture_width, texture_height);
-        else intensity = m.shade(scene, r, i);
-
+		if (texture_switch && texture && !bump_switch) intensity = m.shade(scene, r, i, texture, texture_width, texture_height);
+        else if (texture_switch && texture && bump && bump_switch) 
+			intensity = m.shade(scene, r, i, texture, texture_width, texture_height, bump);
+		else intensity = m.shade(scene, r, i);
 
 
         double n_i, n_t;
@@ -171,11 +172,14 @@ RayTracer::RayTracer()
 	scene = NULL;
 	texture = NULL;
 	background = NULL;
+	bump = NULL;
 	background_width = background_height = 0;
+	bump_width = bump_height = 0;
 	texture_width = texture_height = 0;
 	m_bSceneLoaded = false;
 	texture_switch = false;
 	background_switch = false;
+	bump_switch = false;
 }
 
 
@@ -184,6 +188,7 @@ RayTracer::~RayTracer()
 	if (buffer) delete [] buffer;
 	if (texture) delete [] texture;
 	if (background) delete[] background;
+	if (bump) delete[] bump;
 	delete scene;
 }
 
@@ -256,6 +261,31 @@ bool RayTracer::loadTexture(char * fn)
 		// check
 		if (texture != NULL) delete[] texture;
 		texture = data;
+	}
+	else return false;
+	return true;
+}
+
+bool RayTracer::loadBump(char * fn)
+{
+	unsigned char * data = NULL;
+	data = readBMP(fn, bump_width, bump_height);
+	if (texture_width != bump_width || texture_height != bump_height) {
+		printf("wrong format bump image\n");
+		delete[] data;
+		return false;
+	}
+	if (data) {
+		// check
+		printf("start\n");
+		if (bump != NULL) delete[] bump;
+		printf("start1\n");
+		//printf("%d %d\n", bump_width, bump_height);
+		bump = new unsigned char[bump_width*bump_height];
+		for (int i = 0; i < 3 * bump_width * bump_height; i+=3) {
+			//if (i > bump_width*bump_height - 1) printf("%d\n", i);
+			bump[i/3] = (data[i] + data[i + 1] + data[i + 2]) / 3;
+		}
 	}
 	else return false;
 	return true;
