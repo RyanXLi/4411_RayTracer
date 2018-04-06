@@ -392,6 +392,7 @@ static void processTrimesh( string name, Obj *child, Scene *scene,
     scene->add(tmesh);
 }
 
+
 static Material *getMaterial( Obj *child, const mmap& bindings )
 {
 	string tfield = child->getTypeName();

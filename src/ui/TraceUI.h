@@ -40,6 +40,7 @@ public:
     Fl_Light_Button*    m_rayDistLightButton;
 	Fl_Light_Button*    m_textureLightButton;
 	Fl_Light_Button*    m_backgroundLightButton;
+    Fl_Light_Button*    m_fresnelLightButton;
 	Fl_Light_Button*    m_bumpLightButton;
 
 
@@ -57,7 +58,8 @@ public:
     bool        isJitter() { return m_jitter; }
     bool        isAdaptive() { return m_adapt; }
     bool        isRayDist() { return m_rayDist; }
-    double        getGloss() { return m_gloss; }
+    double      getGloss() { return m_gloss; }
+    bool        isFresnel() { return m_fresnel; }
 
 private:
 	RayTracer*	raytracer;
@@ -73,6 +75,7 @@ private:
 	bool		m_background = FALSE;
 	bool		m_bump = FALSE;
     double      m_gloss = 0;
+    bool        m_fresnel = FALSE;
 
 
 // static class members
@@ -84,6 +87,8 @@ private:
 	static void cb_save_image(Fl_Menu_* o, void* v);
 	static void cb_load_texture(Fl_Menu_* o, void* v);
 	static void cb_load_background(Fl_Menu_* o, void* v);
+    static void cb_load_hf(Fl_Menu_* o, void* v);
+
 	static void cb_load_bump(Fl_Menu_* o, void* v);
 	static void cb_exit(Fl_Menu_* o, void* v);
 	static void cb_about(Fl_Menu_* o, void* v);
@@ -103,6 +108,7 @@ private:
     static void cb_rayDist(Fl_Widget* o, void* v);
 	static void cb_texture(Fl_Widget* o, void* v);
 	static void cb_background(Fl_Widget* o, void* v);
+    static void cb_fresnel(Fl_Widget* o, void* v);
 	static void cb_bump(Fl_Widget* o, void* v);
 };
 

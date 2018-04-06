@@ -14,6 +14,7 @@
 #include "../RayTracer.h"
 
 static bool done;
+static bool hf_done;
 
 //------------------------------------- Help Functions --------------------------------------------
 TraceUI* TraceUI::whoami(Fl_Menu_* o)	// from menu item back to UI itself
@@ -50,6 +51,35 @@ void TraceUI::cb_save_image(Fl_Menu_* o, void* v)
 	if (savefile != NULL) {
 		pUI->m_traceGlWindow->saveImage(savefile);
 	}
+}
+
+void TraceUI::cb_load_hf(Fl_Menu_ * o, void * v) {
+    TraceUI* pUI = whoami(o);
+
+    char* newfile = fl_file_chooser("Open Height Field?", "*.bmp", NULL);
+
+    if (newfile != NULL) {
+        char buf[256];
+      
+        string texNameStr(newfile);
+        texNameStr = texNameStr + ".tex";
+
+        char * texName = new char[texNameStr.size() + 1];
+        std::copy(texNameStr.begin(), texNameStr.end(), texName);
+        texName[texNameStr.size()] = '\0';
+
+        //printf(texName);
+
+        if (pUI->raytracer->loadHf(newfile) && pUI->raytracer->loadHfTexture(texName)) {
+            sprintf(buf, "Height field <%s>", newfile);
+            hf_done = true;	// terminate the previous rendering
+        }
+        else {
+            sprintf(buf, "Height field <Not Loaded>");
+        }
+
+        pUI->m_mainWindow->label(buf);
+    }
 }
 
 void TraceUI::cb_load_texture(Fl_Menu_ * o, void * v)
@@ -226,6 +256,10 @@ void TraceUI::cb_rayDist(Fl_Widget * o, void * v) {
     ((TraceUI*)(o->user_data()))->m_rayDist ^= true;
 }
 
+void TraceUI::cb_fresnel(Fl_Widget * o, void * v) {
+    ((TraceUI*)(o->user_data()))->m_fresnel ^= true;
+}
+
 void TraceUI::cb_texture(Fl_Widget * o, void * v)
 {
 	((TraceUI*)(o->user_data()))->raytracer->texture_switch = ((TraceUI*)(o->user_data()))->m_texture ^= true;
@@ -271,6 +305,7 @@ Fl_Menu_Item TraceUI::menuitems[] = {
 	{ "&File",		0, 0, 0, FL_SUBMENU },
 		{ "&Load Scene...",	FL_ALT + 'l', (Fl_Callback *)TraceUI::cb_load_scene },
 		{ "&Save Image...",	FL_ALT + 's', (Fl_Callback *)TraceUI::cb_save_image },
+        { "&Load Height Field...",	FL_ALT + 'h', (Fl_Callback *)TraceUI::cb_load_hf },
 		{ "&Load Texture...",	FL_ALT + 't', (Fl_Callback *)TraceUI::cb_load_texture },
 		{ "&Load Background...",	FL_ALT + 'b', (Fl_Callback *)TraceUI::cb_load_background },
 		{ "&Load Bump Image...",	FL_ALT + 'c', (Fl_Callback *)TraceUI::cb_load_bump },
@@ -374,12 +409,12 @@ TraceUI::TraceUI() {
         m_glossSlider->align(FL_ALIGN_RIGHT);
         m_glossSlider->callback(cb_glossSlides);
 
-		m_textureLightButton = new Fl_Light_Button(10, 210, 70, 25, "Texture");
+		m_textureLightButton = new Fl_Light_Button(10, 230, 70, 25, "Texture");
 		m_textureLightButton->user_data((void*)(this));
 		m_textureLightButton->value(m_texture);
 		m_textureLightButton->callback(cb_texture);
 
-		m_backgroundLightButton = new Fl_Light_Button(100, 210, 70, 25, "Background");
+		m_backgroundLightButton = new Fl_Light_Button(100, 230, 70, 25, "Background");
 		m_backgroundLightButton->user_data((void*)(this));
 		m_backgroundLightButton->value(m_background);
 		m_backgroundLightButton->callback(cb_background);
@@ -388,6 +423,11 @@ TraceUI::TraceUI() {
 		m_bumpLightButton->user_data((void*)(this));
 		m_bumpLightButton->value(m_bump);
 		m_bumpLightButton->callback(cb_bump);
+
+        m_fresnelLightButton = new Fl_Light_Button(10, 190, 70, 25, "Fresnel");
+        m_fresnelLightButton->user_data((void*)(this));
+        m_fresnelLightButton->value(m_fresnel);
+        m_fresnelLightButton->callback(cb_fresnel);
 
 		m_renderButton = new Fl_Button(240, 27, 70, 25, "&Render");
 		m_renderButton->user_data((void*)(this));
